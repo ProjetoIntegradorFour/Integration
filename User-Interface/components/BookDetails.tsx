@@ -13,7 +13,7 @@ export default function BookDetails({ book }: any) {
     );
   }
 
-  const favorite = isFavorite(book.id);
+  const favorite = isFavorite(book.isbn);
 
   return (
     <View style={styles.container}>
@@ -39,7 +39,9 @@ export default function BookDetails({ book }: any) {
           styles.favButton,
           { backgroundColor: favorite ? "#E91E63" : "#9C27B0" },
         ]}
-        onPress={() => (favorite ? removeFavorite(book.id) : addFavorite(book))}
+        onPress={() =>
+          favorite ? removeFavorite(book.isbn) : addFavorite(book)
+        }
       >
         <Ionicons
           name={favorite ? "heart" : "heart-outline"}
