@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Dimensions,
@@ -12,6 +13,7 @@ import {
 
 const { width } = Dimensions.get("window");
 
+// 👉 export do Book (pra você poder importar no index)
 export interface Book {
   id: string;
   title: string;
@@ -50,12 +52,16 @@ const Carousel: React.FC<CarouselProps> = ({ title, data, renderButton }) => {
           horizontal
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 30 }}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push(`/book/${item.id}`)}
+              activeOpacity={0.8}
+            >
               <Image source={{ uri: item.image }} style={styles.image} />
+
               <View style={{ marginTop: 8 }}>{renderButton(item)}</View>
-            </View>
+            </TouchableOpacity>
           )}
           onMomentumScrollEnd={(event) => {
             const index = Math.round(
@@ -81,7 +87,6 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     marginBottom: 20,
   },
-
   card: {
     width: width * 0.4,
     backgroundColor: "#fff",
@@ -89,7 +94,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     alignItems: "center",
     padding: 10,
-    paddingBottom: 15,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 2 },
@@ -99,10 +103,10 @@ const styles = StyleSheet.create({
 
   image: {
     width: "100%",
-    aspectRatio: 0.8,
+    aspectRatio: 0.8, // mantém proporção de livro
     borderRadius: 6,
     resizeMode: "contain",
-    marginBottom: 6,
+    marginBottom: 6, // aproxima do botão
   },
 });
 
