@@ -1,8 +1,9 @@
 import Carousel from "@/components/Carousel";
 import CategoryMenu from "@/components/CategoryMenu";
 import CustomButton from "@/components/CustomButton";
+import { useBooksStore } from "@/store/useBooksStore";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -11,31 +12,27 @@ import {
   View,
 } from "react-native";
 
-const books = [
-  {
-    id: "1",
-    title: "Memórias Póstumas",
-    image: "https://openlibrary.org/search.json",
-  },
-  { id: "2", title: "Jogos Vorazes", image: "https://placehold.co/200x300" },
-  {
-    id: "3",
-    title: "O Amor Não é Óbvio",
-    image: "https://placehold.co/200x300",
-  },
-  {
-    id: "4",
-    title: "Na Ponta dos Dedos",
-    image: "https://placehold.co/200x300",
-  },
-  {
-    id: "4",
-    title: "Five Nights at Freddy's",
-    image: "https://placehold.co/200x300",
-  },
-];
 export default function Explore() {
+  const { books, fetchBooks, searchBooks, loading } = useBooksStore();
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [query, setQuery] = useState("");
+
+  async function handleSearch(text: string) {
+    setQuery(text);
+    await searchBooks(text);
+  }
+
+  const carouselData = books.map((b) => ({
+    id: b.isbn,
+    title: b.title,
+    image: b.cover,
+    isbn: b.isbn,
+  }));
+
   return (
     <View style={styles.container}>
       <View style={styles.headerBox}>
@@ -58,6 +55,8 @@ export default function Explore() {
           <View style={styles.searchBox}>
             <TextInput
               placeholder="pesquise aqui..."
+              value={query}
+              onChangeText={handleSearch}
               placeholderTextColor="#9C27B0"
               style={styles.input}
             />
@@ -77,7 +76,7 @@ export default function Explore() {
         <View style={styles.content}>
           <Carousel
             title="Livros Clássicos"
-            data={books}
+            data={carouselData}
             renderButton={(book) => (
               <CustomButton
                 title="RENOVAR"
@@ -89,7 +88,7 @@ export default function Explore() {
           />
           <Carousel
             title="Apostilas"
-            data={books}
+            data={carouselData}
             renderButton={(book) => (
               <CustomButton
                 title="RENOVAR"
@@ -101,7 +100,7 @@ export default function Explore() {
           />
           <Carousel
             title="Ciência Política"
-            data={books}
+            data={carouselData}
             renderButton={(book) => (
               <CustomButton
                 title="RENOVAR"
