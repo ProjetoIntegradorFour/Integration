@@ -1,10 +1,13 @@
 import CardBook from "@/components/CardBook";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useReservedStore } from "@/store/useReservedStore";
 
 export default function History() {
   const [books, setBooks] = useState<any[]>([]);
   const [tab, setTab] = useState<"ativo" | "recentes" | "reservas">("ativo");
+  const reservas = useReservedStore((state) => state.reserved);
+
 
   useEffect(() => {
     const mockBooks = [
@@ -30,11 +33,11 @@ export default function History() {
 
   // filtros de  aba
   const filteredBooks =
-    tab === "ativo"
-      ? books
-      : tab === "recentes"
-      ? books.slice(0, 1) // exemplo
-      : []; // reservas (por enquanto vazio)
+  tab === "ativo"
+    ? books
+    : tab === "recentes"
+    ? books.slice(0, 1)
+    : reservas;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 50 }}>
