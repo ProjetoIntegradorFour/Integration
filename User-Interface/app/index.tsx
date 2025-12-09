@@ -29,7 +29,7 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       await signIn(cpf, password); // chama o contexto que já usa o service
-      router.replace("/(tabs)/explore"); // redireciona
+      router.replace("/(tabs)/home"); // redireciona
     } catch (err: any) {
       console.error(err.response?.data || err.message);
       setError("CPF ou senha inválidos");
