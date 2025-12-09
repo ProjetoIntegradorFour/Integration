@@ -24,7 +24,7 @@ export interface Book {
 interface CarouselProps {
   title: string;
   data: Book[];
-  renderButton: (book: Book) => React.ReactNode;
+  renderButton?: (book: Book) => React.ReactNode;
 }
 
 const Carousel: React.FC<CarouselProps> = ({ title, data, renderButton }) => {
@@ -53,6 +53,7 @@ const Carousel: React.FC<CarouselProps> = ({ title, data, renderButton }) => {
           horizontal
           keyExtractor={(item) => item.isbn}
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 15 }}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
@@ -61,7 +62,10 @@ const Carousel: React.FC<CarouselProps> = ({ title, data, renderButton }) => {
             >
               <Image source={{ uri: item.image }} style={styles.image} />
 
-              <View style={{ marginTop: 8 }}>{renderButton(item)}</View>
+              {renderButton && (
+                <View style={{ marginTop: 8 }}>{renderButton(item)}</View>
+              )}
+
             </TouchableOpacity>
           )}
           onMomentumScrollEnd={(event) => {
