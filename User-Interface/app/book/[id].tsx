@@ -1,34 +1,24 @@
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { useBooksStore } from "../../store/useBooksStore";
 import { View, ActivityIndicator } from "react-native";
 import BookDetails from "../../components/BookDetails";
-import { useBooksStore } from "../../store/useBooksStore";
 
 export default function BookPage() {
-  const { id } = useLocalSearchParams(); // id = isbn
-  const { selectedBook, fetchBookByISBN, loading } = useBooksStore();
+  const { id } = useLocalSearchParams(); // isbn
+  const { fetchBook, loading } = useBooksStore();
+  const [book, setBook] = useState<any>(null);
 
   useEffect(() => {
-    if (id) fetchBookByISBN(String(id));
+    if (id) fetchBook(String(id)).then(setBook);
   }, [id]);
 
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: selectedBook?.title ?? "Livro",
-        }}
-      />
+  if (loading || !book)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+      </View>
+    );
 
-      {loading && (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color="#9C27B0" />
-        </View>
-      )}
-
-      {!loading && <BookDetails book={selectedBook} />}
-    </>
-  );
+  return <BookDetails book={book} />;
 }

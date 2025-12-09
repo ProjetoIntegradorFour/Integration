@@ -2,11 +2,32 @@ import AuthorCarousel from "@/components/AuthorCarousel";
 import Carousel from "@/components/Carousel";
 import CustomButton from "@/components/CustomButton";
 import { ThemedText } from "@/components/ThemedText";
+
+import { ActivityIndicator, ScrollView, View } from "react-native";
+import { useEffect } from "react";
 import { useBooksStore } from "@/store/useBooksStore";
-import { ScrollView, View } from "react-native";
 
 export default function App() {
-  const { books, fetchBooks } = useBooksStore();
+  const { books, fetchBooks, loading } = useBooksStore();
+
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  console.log("BOOKS DA STORE:", books);
+
+  if (loading)
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+      </View>
+    );
+  const carouselData = books.map((b) => ({
+    id: b.isbn,
+    title: b.title,
+    image: b.cover,
+    isbn: b.isbn,
+  }));
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#f9f9f9" }}
@@ -17,7 +38,7 @@ export default function App() {
         <View style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 0 }}>
           <Carousel
             title="Novidades"
-            data={books}
+            data={carouselData}
             renderButton={(book) => (
               <CustomButton
                 title="RENOVAR"
@@ -79,7 +100,7 @@ export default function App() {
 
           <Carousel
             title="Livros Populares"
-            data={books}
+            data={carouselData}
             renderButton={(book) => (
               <CustomButton
                 title="RENOVAR"

@@ -1,60 +1,53 @@
 import { create } from "zustand";
-import axios from "axios";
+import { getAllBooks, getBookByIsbn } from "../services/bookService";
 
 interface Book {
   isbn: string;
   title: string;
   author: string;
   cover: string;
-  description?: string;
-  availableCopies?: number;
+  availableCopies: number;
 }
 
 interface BooksStore {
   books: Book[];
-  selectedBook: Book | null;
   loading: boolean;
   error: string | null;
 
   fetchBooks: () => Promise<void>;
-  fetchBookByISBN: (isbn: string) => Promise<void>;
+  fetchBook: (isbn: string) => Promise<Book | null>;
 }
 
-export const useBooksStore = create<BooksStore>((set) => ({
+export const useBooksStore = create<BooksStore>((set, get) => ({
   books: [],
-  selectedBook: null,
   loading: false,
   error: null,
 
-  // GET LISTA DE LIVROS (HOME)
   fetchBooks: async () => {
     try {
-      set({ loading: true });
-      const res = await axios.get("http://10.109.3.13:8080/catalog?page=0&size=20");
-
-      set({
-        books: res.data.content,
-        loading: false,
-        error: null,
-      });
+      set({ loading: true, error: null });
+      const list = await getAllBooks(); // agora é um array
+      set({ books: list, loading: false });
     } catch (e) {
-      set({ loading: false, error: "Erro ao carregar o catálogo" });
+      set({ loading: false, error: "Erro ao carregar livros" });
     }
   },
 
-  // GET DETALHES DO LIVRO (POR ISBN)
-  fetchBookByISBN: async (isbn: string) => {
+
+  fetchBook: async (isbn) => {
+    const cached = get().books.find((b) => b.isbn === isbn);
+    if (cached) return cached;
+
     try {
       set({ loading: true });
-      const res = await axios.get(`http://10.109.3.13:8080/catalog/${isbn}`);
+      const data = await getBookByIsbn(isbn);
 
-      set({
-        selectedBook: res.data,
-        loading: false,
-        error: null,
-      });
-    } catch (e) {
-      set({ loading: false, error: "Erro ao carregar o livro" });
+      // opcional: adiciona o livro baixado no array
+      set((state) => ({ books: [...state.books, data], loading: false }));
+      return data;
+    } catch (err) {
+      set({ loading: false, error: "Erro ao carregar livro" });
+      return null;
     }
   },
 }));
