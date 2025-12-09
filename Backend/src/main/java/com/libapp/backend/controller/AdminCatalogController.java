@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.libapp.backend.entity.Catalog;
 import com.libapp.backend.entity.Copy;
+import com.libapp.backend.exception.ResourceNotFoundException;
 import com.libapp.backend.service.CatalogService;
 import com.libapp.backend.service.CopyService;
 
@@ -25,7 +26,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/admin/catalog")
 @CrossOrigin
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminCatalogController {
 
     private final CatalogService catalogService;
@@ -45,7 +46,7 @@ public class AdminCatalogController {
     @PostMapping("/{isbn}/copies")
     public ResponseEntity<Copy> addCopy(@PathVariable String isbn, @Valid @RequestBody Copy copy) {
         Catalog catalog = catalogService.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Catalog not found for ISBN: " + isbn));
+                .orElseThrow(() -> new ResourceNotFoundException("Catalog", "ISBN", isbn));
         copy.setCatalog(catalog);
         Copy savedCopy = copyService.save(copy);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCopy);
@@ -73,7 +74,7 @@ public class AdminCatalogController {
     @GetMapping("/{isbn}/copies")
     public ResponseEntity<List<Copy>> listCopies(@PathVariable String isbn) {
         catalogService.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Catalog not found for ISBN: " + isbn));
+                .orElseThrow(() -> new ResourceNotFoundException("Catalog", "ISBN", isbn));
 
         List<Copy> copies = copyService.findByIsbn(isbn);
         return ResponseEntity.ok(copies);

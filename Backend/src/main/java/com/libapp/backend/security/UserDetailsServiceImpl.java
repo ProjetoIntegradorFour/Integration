@@ -15,12 +15,16 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     UserRepository userRepository;
 
-    // Username variable is used to accomplish 'UserDatailsService' interface contract. It's value is actually 'cpf'.
-
+    /**
+     * IMPORTANT: The 'username' parameter here is actually the CPF, because our
+     * UserRepository.findByUsername() method searches by CPF. This is
+     * consistent with how authentication works in AuthController.
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // 'username' is actually CPF in our system
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("CPF not found: " + username));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with CPF: " + username));
 
         return UserDetailsImpl.build(user);
     }

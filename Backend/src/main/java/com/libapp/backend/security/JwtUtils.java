@@ -21,7 +21,7 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${jwt.expiration.ms}")
-    private long jwtExpirationMs;;
+    private long jwtExpirationMs;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -31,6 +31,8 @@ public class JwtUtils {
         List<String> roles = userPrincipal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
+
+        System.out.println("[JWT] Generating token with roles: " + roles);
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getCpf())
@@ -52,12 +54,16 @@ public class JwtUtils {
 
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromJwtToken(String token) {
-        return (List<String>) Jwts.parserBuilder()
+        List<String> roles = (List<String>) Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .get("roles");
+
+        System.out.println("[JWT] Extracted roles from token: " + roles);
+
+        return roles;
     }
 
     public boolean validateJwtToken(String authToken) {
@@ -68,7 +74,21 @@ public class JwtUtils {
                     .parseClaimsJws(authToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            System.err.println("[JWT] Token validation failed: " + e.getMessage());
             return false;
+        }
+    }
+
+    public void logJwtContents(String token) {
+        try {
+            System.out.println("=== JWT DEBUG INFO ===");
+            System.out.println("Token: " + token.substring(0, Math.min(20, token.length())) + "...");
+            System.out.println("Subject (CPF): " + getCpfFromJwtToken(token));
+            System.out.println("Roles: " + getRolesFromJwtToken(token));
+            System.out.println("Is valid: " + validateJwtToken(token));
+            System.out.println("======================");
+        } catch (Exception e) {
+            System.err.println("Error parsing JWT for debugging: " + e.getMessage());
         }
     }
 }

@@ -2,7 +2,17 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFavoritesStore } from "../store/useFavoritesStore";
 
-export default function BookDetails({ book }: any) {
+interface BookDetailsProps {
+  book: {
+    isbn: string;
+    title: string;
+    author: string;
+    cover: string;
+    description?: string;
+  } | null;
+}
+
+export default function BookDetails({ book }: BookDetailsProps) {
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
 
   if (!book) {
@@ -13,16 +23,23 @@ export default function BookDetails({ book }: any) {
     );
   }
 
-  const favorite = isFavorite(book.id);
+  const favorite = isFavorite(book.isbn);
+
+  // mapeia para o formato esperado pela store de favoritos
+  const favoritePayload = {
+    id: book.isbn, // se sua store espera um id independente, usamos o isbn como id
+    isbn: book.isbn,
+    title: book.title,
+    author: book.author,
+    image: book.cover,
+  };
 
   return (
     <View style={styles.container}>
-      {/* Moldura da imagem */}
       <View style={styles.coverWrapper}>
         <Image source={{ uri: book.cover }} style={styles.coverImage} />
       </View>
 
-      {/* Info ao lado */}
       <View style={styles.infoBox}>
         <Text style={styles.title}>{book.title}</Text>
         <Text style={styles.author}>por {book.author}</Text>
@@ -30,16 +47,19 @@ export default function BookDetails({ book }: any) {
         <View style={styles.line} />
 
         <Text style={styles.sectionTitle}>Sinopse</Text>
-        <Text style={styles.description}>{book.description}</Text>
+        <Text style={styles.description}>
+          {book.description ?? "Sem descrição disponível."}
+        </Text>
       </View>
 
-      {/* Botão de favoritar */}
       <TouchableOpacity
         style={[
           styles.favButton,
           { backgroundColor: favorite ? "#E91E63" : "#9C27B0" },
         ]}
-        onPress={() => (favorite ? removeFavorite(book.id) : addFavorite(book))}
+        onPress={() =>
+          favorite ? removeFavorite(book.isbn) : addFavorite(favoritePayload)
+        }
       >
         <Ionicons
           name={favorite ? "heart" : "heart-outline"}
@@ -55,12 +75,8 @@ export default function BookDetails({ book }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    gap: 20,
-  },
+  container: { padding: 20, gap: 20 },
 
-  // Moldura bonita da capa
   coverWrapper: {
     width: 160,
     height: 240,
@@ -89,24 +105,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 4,
-  },
+  title: { fontSize: 22, fontWeight: "bold", color: "#333", marginBottom: 4 },
 
-  author: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 10,
-  },
+  author: { fontSize: 16, color: "#666", marginBottom: 10 },
 
-  line: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginVertical: 10,
-  },
+  line: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
 
   sectionTitle: {
     fontSize: 18,
@@ -115,11 +118,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  description: {
-    fontSize: 15,
-    lineHeight: 21,
-    color: "#444",
-  },
+  description: { fontSize: 15, lineHeight: 21, color: "#444" },
 
   favButton: {
     flexDirection: "row",
@@ -131,15 +130,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  favText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  favText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 });

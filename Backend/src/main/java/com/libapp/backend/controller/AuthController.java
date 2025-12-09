@@ -24,6 +24,7 @@ import com.libapp.backend.entity.User;
 import com.libapp.backend.repository.RoleRepository;
 import com.libapp.backend.repository.UserRepository;
 import com.libapp.backend.security.JwtUtils;
+import com.libapp.backend.security.RoleUtils;
 import com.libapp.backend.security.UserDetailsImpl;
 
 @RestController
@@ -48,6 +49,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        // Note: Using CPF as username for authentication
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getCpf(), loginRequest.getPassword()));
 
@@ -59,7 +61,8 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), roles));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(),
+                userDetails.getUsername(), userDetails.getCpf(), roles));
     }
 
     @PostMapping("/signup")
@@ -68,30 +71,34 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Error: User CPF is already taken!");
         }
 
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getCpf(), encoder.encode(signUpRequest.getPassword()));
+        if (userRepository.findByUsername(signUpRequest.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+        }
+
+        User user = new User(signUpRequest.getUsername(),
+                signUpRequest.getCpf(),
+                encoder.encode(signUpRequest.getPassword()));
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
 
-        if (strRoles == null) {
+        if (strRoles == null || strRoles.isEmpty()) {
             Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                    .orElseThrow(() -> new RuntimeException("Error: ROLE_USER not found in database."));
             roles.add(userRole);
         } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin" -> {
-                        Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                    }
-                    default -> {
-                        Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                    }
+            for (String roleInput : strRoles) {
+                String normalizedRole = RoleUtils.normalizeToRoleName(roleInput);
+
+                try {
+                    RoleName roleName = RoleName.valueOf(normalizedRole);
+                    Role role = roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new RuntimeException("Error: Role '" + normalizedRole + "' not found."));
+                    roles.add(role);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("Error: Invalid role '" + roleInput + "'. Valid roles: user, admin");
                 }
-            });
+            }
         }
 
         user.setRoles(roles);
@@ -168,12 +175,14 @@ public class AuthController {
         private String type = "Bearer";
         private Long id;
         private String username;
+        private String cpf; // Added CPF to response
         private List<String> roles;
 
-        public JwtResponse(String accessToken, Long id, String username, List<String> roles) {
+        public JwtResponse(String accessToken, Long id, String username, String cpf, List<String> roles) {
             this.token = accessToken;
             this.id = id;
             this.username = username;
+            this.cpf = cpf;
             this.roles = roles;
         }
 
@@ -207,6 +216,14 @@ public class AuthController {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getCpf() {
+            return cpf;
+        }
+
+        public void setCpf(String cpf) {
+            this.cpf = cpf;
         }
 
         public List<String> getRoles() {

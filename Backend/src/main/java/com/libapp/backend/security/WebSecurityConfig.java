@@ -118,9 +118,9 @@ public class WebSecurityConfig {
                     }
 
                     // Role-based access control
-                    authz.requestMatchers("/api/test/admin").hasRole("ADMIN")
-                            .requestMatchers("/api/test/user").hasAnyRole("USER", "ADMIN")
-                            .requestMatchers("/admin/**").hasRole("ADMIN")
+                    authz.requestMatchers("/api/test/admin").hasAuthority("ROLE_ADMIN")
+                            .requestMatchers("/api/test/user").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                             .anyRequest().authenticated();
                 });
 
