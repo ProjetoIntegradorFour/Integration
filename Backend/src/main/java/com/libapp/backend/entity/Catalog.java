@@ -48,6 +48,9 @@ public class Catalog {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "TEXT")
+    private String genres;
+
     private boolean isAdminOverridden = false;
 
     private LocalDateTime lastSyncedAt;
@@ -144,6 +147,14 @@ public class Catalog {
         this.description = description;
     }
 
+    public String getGenres() {
+        return genres;
+    }
+
+    public void setGenres(String genres) {
+        this.genres = genres;
+    }
+
     public boolean isIsAdminOverridden() {
         return isAdminOverridden;
     }
@@ -175,5 +186,4 @@ public class Catalog {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
 }

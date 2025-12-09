@@ -26,15 +26,34 @@ public class IsbnLookupService {
         log.info("Fetching metadata for ISBN: {}", isbn);
 
         try {
-            String url = "https://openlibrary.org/isbn/" + isbn + ".json";
+            // MODIFIED URL: Using the detailed bulk lookup endpoint for richer data (description and subjects)
+            String url = "https://openlibrary.org/api/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=details";
 
+            // The response is a Map keyed by "ISBN:{isbn}"
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
             if (response == null || response.isEmpty()) {
                 throw new ResourceNotFoundException("Book metadata not found for ISBN in OpenLibrary: " + isbn);
             }
 
-            return mapResponseToCatalog(isbn, response);
+            String isbnKey = "ISBN:" + isbn;
+
+            if (!response.containsKey(isbnKey)) {
+                throw new ResourceNotFoundException("Book metadata not found for ISBN in OpenLibrary: " + isbn);
+            }
+
+            // The actual book data is nested under ISBN:{isbn} and then under 'details'
+            Map<String, Object> bookEntry = (Map<String, Object>) response.get(isbnKey);
+            Map<String, Object> detailsMap = (Map<String, Object>) bookEntry.get("details");
+
+            if (detailsMap == null || detailsMap.isEmpty()) {
+                log.warn("ISBN {} found, but 'details' map is missing or empty.", isbn);
+                // Fallback to minimal data if details are missing
+                return createFallbackCatalog(isbn);
+            }
+
+            // The mapResponseToCatalog method now works with the extracted 'details' map
+            return mapResponseToCatalog(isbn, detailsMap);
 
         } catch (HttpClientErrorException.NotFound e) {
             log.warn("ISBN {} not found in OpenLibrary. Status: 404 Not Found.", isbn);
@@ -43,7 +62,8 @@ public class IsbnLookupService {
             throw e;
         } catch (Exception e) {
             log.error("Error fetching metadata for ISBN {}: {}", isbn, e.getMessage(), e);
-            throw new ResourceNotFoundException("External API error for ISBN: " + isbn + ". Message: " + e.getMessage());
+            // It's good practice to provide a manual entry option on API error
+            return createFallbackCatalog(isbn);
         }
     }
 
@@ -76,6 +96,7 @@ public class IsbnLookupService {
 
         catalog.setCoverUrl("https://covers.openlibrary.org/b/isbn/" + isbn + "-L.jpg");
 
+        // Synopsis/Description Logic (The new endpoint often returns this)
         Object descriptionObject = data.get("description");
         String description = null;
         if (descriptionObject instanceof String) {
@@ -85,6 +106,15 @@ public class IsbnLookupService {
         }
 
         catalog.setDescription(description != null ? description : "Sem descrição disponível");
+
+        // GENRES (Subjects) Logic - Fetched successfully from the 'details' map
+        List<String> subjects = (List<String>) data.get("subjects");
+        if (subjects != null && !subjects.isEmpty()) {
+            // Join subjects into a comma-separated string for database storage
+            catalog.setGenres(String.join(", ", subjects));
+        } else {
+            catalog.setGenres(null);
+        }
 
         catalog.setLastSyncedAt(LocalDateTime.now());
 
@@ -123,6 +153,7 @@ public class IsbnLookupService {
         catalog.setCoverUrl(null);
         catalog.setLastSyncedAt(LocalDateTime.now());
         catalog.setDescription("Falha ao buscar metadados do OpenLibrary. Título e dados inseridos manualmente.");
+        catalog.setGenres(null);
         return catalog;
     }
 }
