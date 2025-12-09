@@ -25,7 +25,6 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/admin/catalog")
 @CrossOrigin
-@PreAuthorize("hasRole('ADMIN')")
 public class AdminCatalogController {
 
     private final CatalogService catalogService;

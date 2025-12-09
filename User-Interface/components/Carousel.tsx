@@ -18,6 +18,7 @@ export interface Book {
   id: string;
   title: string;
   image: string;
+  isbn: string;
 }
 
 interface CarouselProps {
@@ -50,12 +51,12 @@ const Carousel: React.FC<CarouselProps> = ({ title, data, renderButton }) => {
           ref={flatListRef}
           data={data}
           horizontal
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.isbn}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.card}
-              onPress={() => router.push(`/book/${item.id}`)}
+              onPress={() => router.push(`/book/${item.isbn}`)}
               activeOpacity={0.8}
             >
               <Image source={{ uri: item.image }} style={styles.image} />
