@@ -1,5 +1,7 @@
 import { apiCatalog } from "./apiCatalog";
 
+const BASE_URL = "http://10.109.3.118:8080";
+
 export const getAllBooks = async () => {
   try {
     const res = await apiCatalog.get("");
@@ -19,3 +21,18 @@ export const getBookByIsbn = async (isbn: string) => {
     throw err;
   }
 };
+
+export async function searchBooks(query: string) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/catalog?page=0&size=10&query=${encodeURIComponent(query)}`
+    );
+    if (!response.ok) throw new Error("Erro ao buscar livros");
+
+    const data = await response.json();
+    return data.content || []; // backend geralmente retorna assim
+  } catch (error) {
+    console.error("searchBooks error:", error);
+    return [];
+  }
+}
