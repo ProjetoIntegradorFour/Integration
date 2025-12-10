@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useFavoritesStore } from "../store/useFavoritesStore";
+import { useReservedStore } from "../store/useReservedStore";
 
 interface BookDetailsProps {
   book: {
@@ -10,10 +11,12 @@ interface BookDetailsProps {
     cover: string;
     description?: string;
   } | null;
+  onReserve?: () => void;
 }
 
-export default function BookDetails({ book }: BookDetailsProps) {
+export default function BookDetails({ book, onReserve }: BookDetailsProps) {
   const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
+  const { addReserved, removeReserved, isReserved } = useReservedStore();
 
   if (!book) {
     return (
@@ -22,6 +25,16 @@ export default function BookDetails({ book }: BookDetailsProps) {
       </View>
     );
   }
+
+  const reserved = isReserved(book.isbn);
+
+  const reservedPayload = {
+    id: book.isbn,
+    isbn: book.isbn,
+    title: book.title,
+    author: book.author,
+    image: book.cover,
+  };
 
   const favorite = isFavorite(book.isbn);
 
@@ -70,6 +83,19 @@ export default function BookDetails({ book }: BookDetailsProps) {
           {favorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.favButton, { backgroundColor: "#8A2BE2" }]}
+        onPress={() =>
+          reserved ? removeReserved(book.isbn) : addReserved(reservedPayload)
+        }
+      >
+        <Ionicons name="bookmark" size={24} color="#fff" />
+        <Text style={styles.favText}>
+          {reserved ? "Cancelar Reserva" : "Reservar Livro"}
+        </Text>
+      </TouchableOpacity>
+
     </View>
   );
 }
