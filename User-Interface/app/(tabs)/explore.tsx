@@ -74,18 +74,9 @@ export default function Explore() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          <Carousel
-            title="Livros Clássicos"
-            data={carouselData}
-          />
-          <Carousel
-            title="Apostilas"
-            data={carouselData}
-          />
-          <Carousel
-            title="Ciência Política"
-            data={carouselData}
-          />
+          <Carousel title="Livros Clássicos" data={carouselData} />
+          <Carousel title="Apostilas" data={carouselData} />
+          <Carousel title="Ciência Política" data={carouselData} />
         </View>
       </ScrollView>
     </View>

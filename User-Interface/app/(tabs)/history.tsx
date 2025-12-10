@@ -4,103 +4,120 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useReservedStore } from "@/store/useReservedStore";
 
 export default function History() {
-  const [books, setBooks] = useState<any[]>([]);
-  const [tab, setTab] = useState<"ativo" | "recentes" | "reservas">("ativo");
+  const [activeBooks, setActiveBooks] = useState<any[]>([]);
+  const [recentBooks, setRecentBooks] = useState<any[]>([]);
   const reservas = useReservedStore((state) => state.reserved);
 
+  const [tab, setTab] = useState<"ativo" | "recentes" | "reservas">("ativo");
 
   useEffect(() => {
-    const mockBooks = [
+    // livros EMPRÉSTIMO ATIVO
+    const mockAtivos = [
       {
         id: 1,
-        title: "Percy Jackson e o Ladrão de Raios",
-        author: "Rick Riordan",
-        isbn: "9788598078355",
+        title: "A Revolução dos Bichos",
+        author: "George Orwell",
+        isbn: "9780451526342",
         due_date: "2025-08-22",
         status: "ok",
       },
       {
         id: 2,
-        title: "1984",
-        author: "George Orwell",
-        isbn: "9788535909555",
+        title: "O Hobbit",
+        author: "J.R.R. Tolkien",
+        isbn: "9780547928227",
         due_date: "2025-07-10",
-        status: "late",
+        status: "due_soon",
       },
     ];
-    setBooks(mockBooks);
+
+    // livros RECENTES (devolvidos recentemente)
+    const mockRecentes = [
+      {
+        id: 3,
+        title: "Dom Casmurro",
+        author: "Machado de Assis",
+        isbn: "9788594318600",
+        due_date: "2025-06-01",
+        status: "ok",
+      },
+      {
+        id: 4,
+        title: "O Pequeno Príncipe",
+        author: "Antoine de Saint-Exupéry",
+        isbn: "9780156012195",
+        due_date: "2025-05-20",
+        status: "ok",
+      },
+    ];
+
+    setActiveBooks(mockAtivos);
+    setRecentBooks(mockRecentes);
   }, []);
 
-  // filtros de  aba
+  // filtros de aba
   const filteredBooks =
-  tab === "ativo"
-    ? books
-    : tab === "recentes"
-    ? books.slice(0, 1)
-    : reservas;
+    tab === "ativo"
+      ? activeBooks
+      : tab === "recentes"
+        ? recentBooks
+        : reservas;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 50 }}>
-
       {/* ======================= ABAS ======================= */}
-      <View style={{ flexDirection: "row", justifyContent: "center", gap: 10, marginBottom: 25 }}>
-
-        <TouchableOpacity
-          onPress={() => setTab("ativo")}
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: tab === "ativo" ? "#8A2BE2" : "#cccccc",
-            backgroundColor: tab === "ativo" ? "#8A2BE2" : "white",
-          }}
-        >
-          <Text style={{ color: tab === "ativo" ? "white" : "#333" }}>ativo</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setTab("recentes")}
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: tab === "recentes" ? "#8A2BE2" : "#cccccc",
-            backgroundColor: tab === "recentes" ? "#8A2BE2" : "white",
-          }}
-        >
-          <Text style={{ color: tab === "recentes" ? "white" : "#333" }}>recentes</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => setTab("reservas")}
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: tab === "reservas" ? "#8A2BE2" : "#cccccc",
-            backgroundColor: tab === "reservas" ? "#8A2BE2" : "white",
-          }}
-        >
-          <Text style={{ color: tab === "reservas" ? "white" : "#333" }}>reservas</Text>
-        </TouchableOpacity>
-
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: 10,
+          marginBottom: 25,
+        }}
+      >
+        {["ativo", "recentes", "reservas"].map((v) => (
+          <TouchableOpacity
+            key={v}
+            onPress={() => setTab(v as any)}
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 6,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: tab === v ? "#8A2BE2" : "#cccccc",
+              backgroundColor: tab === v ? "#8A2BE2" : "white",
+            }}
+          >
+            <Text style={{ color: tab === v ? "white" : "#333" }}>{v}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
-      {/* ==================================================== */}
 
-      {filteredBooks.map((book) => (
-        <CardBook
-          key={book.id}
-          title={book.title}
-          author={book.author}
-          isbn={`https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`}
-          dueDate={book.due_date}
-          status={book.status}
-          onRenew={() => console.log(`Renovar ${book.title}`)}
-        />
-      ))}
+      {/* ======================= LISTA ======================= */}
+      {filteredBooks.length === 0 ? (
+        <View style={{ alignItems: "center", marginTop: 20 }}>
+          <Text style={{ color: "#666", fontSize: 16 }}>
+            Nenhum livro encontrado aqui.
+          </Text>
+        </View>
+      ) : (
+        filteredBooks.map((book) => {
+          const coverUrl =
+            book.image ??
+            `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+
+          return (
+            <CardBook
+              key={book.id || book.isbn}
+              title={book.title}
+              author={book.author}
+              isbn={book.isbn}
+              coverUrl={coverUrl}
+              dueDate={book.due_date}
+              status={book.status}
+            />
+          );
+        })
+      )}
     </ScrollView>
   );
 }

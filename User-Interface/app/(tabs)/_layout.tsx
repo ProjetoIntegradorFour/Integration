@@ -1,6 +1,6 @@
 import { router, Tabs } from "expo-router";
 import { useEffect } from "react";
-import { Image, Pressable } from "react-native";
+import { Image, Pressable, TouchableOpacity } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { ThemedText } from "@/components/ThemedText";
@@ -17,7 +17,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     if (!user) {
-      router.replace("./index");
+      router.replace("/");
     }
   }, [user]);
 
@@ -36,7 +36,10 @@ export default function TabLayout() {
           backgroundColor: "#8BC34A",
         },
         headerLeft: () => (
-          <>
+          <TouchableOpacity
+            onPress={() => router.push("/home")}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
             <Image
               source={require("../../assets/images/logo.png")}
               style={{ width: 40, height: 40, marginLeft: 15, borderRadius: 5 }}
@@ -47,7 +50,7 @@ export default function TabLayout() {
             >
               SENAI
             </ThemedText>
-          </>
+          </TouchableOpacity>
         ),
         headerRight: () => (
           <>
