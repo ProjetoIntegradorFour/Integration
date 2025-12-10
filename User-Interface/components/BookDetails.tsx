@@ -1,5 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useFavoritesStore } from "../store/useFavoritesStore";
 import { useReservedStore } from "../store/useReservedStore";
 
@@ -48,55 +55,60 @@ export default function BookDetails({ book, onReserve }: BookDetailsProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.coverWrapper}>
-        <Image source={{ uri: book.cover }} style={styles.coverImage} />
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#f9f9f9" }}
+      contentContainerStyle={{ paddingVertical: 30 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.container}>
+        <View style={styles.coverWrapper}>
+          <Image source={{ uri: book.cover }} style={styles.coverImage} />
+        </View>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.title}>{book.title}</Text>
+          <Text style={styles.author}>por {book.author}</Text>
+
+          <View style={styles.line} />
+
+          <Text style={styles.sectionTitle}>Sinopse</Text>
+          <Text style={styles.description}>
+            {book.description ?? "Sem descrição disponível."}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.favButton,
+            { backgroundColor: favorite ? "#E91E63" : "#9C27B0" },
+          ]}
+          onPress={() =>
+            favorite ? removeFavorite(book.isbn) : addFavorite(favoritePayload)
+          }
+        >
+          <Ionicons
+            name={favorite ? "heart" : "heart-outline"}
+            size={24}
+            color="#fff"
+          />
+          <Text style={styles.favText}>
+            {favorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.favButton, { backgroundColor: "#8A2BE2" }]}
+          onPress={() =>
+            reserved ? removeReserved(book.isbn) : addReserved(reservedPayload)
+          }
+        >
+          <Ionicons name="bookmark" size={24} color="#fff" />
+          <Text style={styles.favText}>
+            {reserved ? "Cancelar Reserva" : "Reservar Livro"}
+          </Text>
+        </TouchableOpacity>
       </View>
-
-      <View style={styles.infoBox}>
-        <Text style={styles.title}>{book.title}</Text>
-        <Text style={styles.author}>por {book.author}</Text>
-
-        <View style={styles.line} />
-
-        <Text style={styles.sectionTitle}>Sinopse</Text>
-        <Text style={styles.description}>
-          {book.description ?? "Sem descrição disponível."}
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.favButton,
-          { backgroundColor: favorite ? "#E91E63" : "#9C27B0" },
-        ]}
-        onPress={() =>
-          favorite ? removeFavorite(book.isbn) : addFavorite(favoritePayload)
-        }
-      >
-        <Ionicons
-          name={favorite ? "heart" : "heart-outline"}
-          size={24}
-          color="#fff"
-        />
-        <Text style={styles.favText}>
-          {favorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.favButton, { backgroundColor: "#8A2BE2" }]}
-        onPress={() =>
-          reserved ? removeReserved(book.isbn) : addReserved(reservedPayload)
-        }
-      >
-        <Ionicons name="bookmark" size={24} color="#fff" />
-        <Text style={styles.favText}>
-          {reserved ? "Cancelar Reserva" : "Reservar Livro"}
-        </Text>
-      </TouchableOpacity>
-
-    </View>
+    </ScrollView>
   );
 }
 
