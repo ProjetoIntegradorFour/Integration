@@ -77,38 +77,14 @@ export default function Explore() {
           <Carousel
             title="Livros Clássicos"
             data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
           />
           <Carousel
             title="Apostilas"
             data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
           />
           <Carousel
             title="Ciência Política"
             data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
           />
         </View>
       </ScrollView>
