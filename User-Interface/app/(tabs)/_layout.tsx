@@ -17,7 +17,7 @@ export default function TabLayout() {
 
   useEffect(() => {
     if (!user) {
-      router.replace("./index");
+      router.replace("/");
     }
   }, [user]);
 
