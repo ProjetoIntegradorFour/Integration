@@ -1,5 +1,7 @@
 package com.libapp.backend.service;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,10 +25,12 @@ public class CatalogService {
 
     private final CatalogRepository catalogRepository;
     private final IsbnLookupService isbnLookupService;
+    private final CopyService copyService;
 
-    public CatalogService(CatalogRepository catalogRepository, IsbnLookupService isbnLookupService) {
+    public CatalogService(CatalogRepository catalogRepository, IsbnLookupService isbnLookupService, CopyService copyService) {
         this.catalogRepository = catalogRepository;
         this.isbnLookupService = isbnLookupService;
+        this.copyService = copyService;
     }
 
     public List<Catalog> findAll() {
@@ -66,6 +70,28 @@ public class CatalogService {
 
     public Page<CatalogSummaryDTO> findPublicCatalog(String query, Pageable pageable) {
         String safeQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
-        return catalogRepository.findCatalogSummariesWithSearchAndPagination(safeQuery, pageable);
+
+        Page<Catalog> catalogPage = catalogRepository.findByQueryWithPagination(safeQuery, pageable);
+
+        return catalogPage.map(catalog -> {
+            Long availableCopies = copyService.countAvailableCopies(catalog.getIsbn());
+
+            List<String> genres;
+            String genresString = catalog.getGenres();
+            if (genresString != null && !genresString.trim().isEmpty()) {
+                genres = Arrays.asList(genresString.split("\\s*,\\s*"));
+            } else {
+                genres = Collections.emptyList();
+            }
+
+            return new CatalogSummaryDTO(
+                    catalog.getIsbn(),
+                    catalog.getTitle(),
+                    catalog.getAuthors(),
+                    catalog.getCoverUrl(),
+                    genres,
+                    availableCopies
+            );
+        });
     }
 }

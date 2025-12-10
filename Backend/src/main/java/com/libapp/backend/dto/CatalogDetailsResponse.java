@@ -1,5 +1,9 @@
 package com.libapp.backend.dto;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import com.libapp.backend.entity.Catalog;
 
 public class CatalogDetailsResponse {
@@ -14,6 +18,8 @@ public class CatalogDetailsResponse {
     private String coverUrl;
     private String description;
 
+    private List<String> genres;
+
     private long availableCopies;
 
     public CatalogDetailsResponse(Catalog catalog, long availableCopies) {
@@ -27,6 +33,21 @@ public class CatalogDetailsResponse {
         this.coverUrl = catalog.getCoverUrl();
         this.description = catalog.getDescription();
         this.availableCopies = availableCopies;
+
+        String genresString = catalog.getGenres();
+        if (genresString != null && !genresString.trim().isEmpty()) {
+            this.genres = Arrays.asList(genresString.split("\\s*,\\s*"));
+        } else {
+            this.genres = Collections.emptyList();
+        }
+    }
+
+    public List<String> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(List<String> genres) {
+        this.genres = genres;
     }
 
     public String getIsbn() {
@@ -108,4 +129,5 @@ public class CatalogDetailsResponse {
     public void setAvailableCopies(long availableCopies) {
         this.availableCopies = availableCopies;
     }
+
 }
