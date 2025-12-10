@@ -6,9 +6,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useEffect } from "react";
 import { useBooksStore } from "@/store/useBooksStore";
-import Carousel from "@/components/Carousel";
-import AuthorCarousel from "@/components/AuthorCarousel";
-import { ThemedText } from "@/components/ThemedText";
 
 export default function App() {
   const { books, fetchBooks, loading } = useBooksStore();
@@ -52,8 +49,8 @@ export default function App() {
       contentContainerStyle={{ paddingVertical: 30 }}
       showsVerticalScrollIndicator={false}
     >
-      <ThemedText>
-        <View style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 0 }}>
+      <View style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 0 }}>
+        <ThemedText>
           <Carousel title="Novidades" data={carouselData} />
 
           <AuthorCarousel
@@ -107,8 +104,8 @@ export default function App() {
           />
 
           <Carousel title="Livros Populares" data={carouselData} />
-        </View>
-      </ThemedText>
+        </ThemedText>
+      </View>
     </ScrollView>
   );
 }

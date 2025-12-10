@@ -27,7 +27,6 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <AuthProvider>
         <Stack initialRouteName="index">
-          
           <Stack.Screen name="index" options={{ headerShown: false }} />
 
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -39,6 +38,7 @@ export default function RootLayout() {
             name="appSettings"
             options={{ headerTitle: "Voltar" }}
           />
+          <Stack.Screen name="book/[id]" options={{ headerTitle: "Voltar" }} />
 
           <Stack.Screen name="+not-found" />
 
