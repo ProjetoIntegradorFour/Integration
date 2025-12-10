@@ -6,6 +6,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 import { useEffect } from "react";
 import { useBooksStore } from "@/store/useBooksStore";
+import Carousel from "@/components/Carousel";
+import AuthorCarousel from "@/components/AuthorCarousel";
+import { ThemedText } from "@/components/ThemedText";
 
 export default function App() {
   const { books, fetchBooks, loading } = useBooksStore();

@@ -1,109 +1,90 @@
-import React from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
-import CustomButton from "./CustomButton";
-import StatusCode from "./StatusCode";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import { router } from "expo-router";
 
-interface BookCardProps {
+interface CardBookProps {
   title: string;
   author: string;
+  coverUrl: string;
   isbn: string;
-  dueDate: string;
-  status: "current" | "near" | "late" | "queue" | "pickup" | "available";
-  onRenew: () => void;
+  dueDate?: string;
+  status?: "ok" | "late" | "due_soon"; 
 }
 
-const STATUS_COLORS: Record<BookCardProps["status"], string> = {
-  current: "#00FF66",
-  near: "#FFD700",
-  late: "#FF3333",
-  queue: "#3333FF",
-  pickup: "#A020F0",
-  available: "#00FFFF",
-};
-
-const CardBook: React.FC<BookCardProps> = ({
+export default function CardBook({
   title,
   author,
+  coverUrl,
   isbn,
   dueDate,
-  status,
-  onRenew,
-}) => {
-  const isLate = status === "late";
+  status = "ok",
+}: CardBookProps) {
+
+  const getStatusColor = () => {
+    switch (status) {
+      case "late":
+        return "#E53935";
+      case "due_soon":
+        return "#FB8C00";
+      default:
+        return "#4CAF50";
+    }
+  };
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      onPress={() => router.push(`/book/${isbn}`)}
+      style={{
+        flexDirection: "row",
+        backgroundColor: "#fff",
+        marginHorizontal: 16,
+        marginBottom: 14,
+        padding: 12,
+        borderRadius: 12,
+        elevation: 2,
+        gap: 12,
+        borderWidth: 1,
+        borderColor: "#8A2BE2",
+      }}
+    >
+      {/* CAPA */}
       <Image
-        source={{ uri: `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg` }}
-        style={styles.image}
+        source={{ uri: coverUrl }}
+        style={{
+          width: 70,
+          height: 100,
+          borderRadius: 8,
+        }}
       />
 
-      <View style={styles.info}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.author}>{author}</Text>
-        <Text style={[styles.dueDate, isLate && styles.dueLate]}>
-          {isLate ? "Devolução atrasada" : "Devolução até " + dueDate}
+      {/* INFO */}
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>
+          {title}
         </Text>
-      </View>
+        <Text style={{ fontSize: 14, color: "#555", marginBottom: 8 }}>
+          {author}
+        </Text>
 
-      <View style={styles.rightSection}>
-        <StatusCode color={STATUS_COLORS[status]} />
-        <CustomButton
-          title="RENOVAR"
-          variant="outline"
-          color="#007bff"
-          onPress={onRenew}
-        />
+        {/* STATUS / DATA */}
+        {dueDate && (
+          <View>
+            <Text style={{ fontSize: 13, color: "#777" }}>Devolução:</Text>
+
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: getStatusColor(),
+              }}
+            >
+              {dueDate}
+              {status === "due_soon" && " - Devolva em breve"}
+              {status === "late" && " - Atrasado"}
+            </Text>
+          </View>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
-};
+}
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#a020f0",
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 10,
-    marginHorizontal: 10,
-    alignItems: "flex-start", // deixa o topo alinhado
-  },
-  image: {
-    width: 60,
-    height: 90,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  info: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  rightSection: {
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    minHeight: 90, // mesmo da imagem pra alinhar verticalmente
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 15,
-    flexShrink: 1,
-  },
-  author: {
-    fontSize: 13,
-    color: "#666",
-    marginBottom: 4,
-  },
-  dueDate: {
-    fontSize: 12,
-    color: "#333",
-  },
-  dueLate: {
-    color: "red",
-    fontWeight: "600",
-  },
-});
-
-export default CardBook;

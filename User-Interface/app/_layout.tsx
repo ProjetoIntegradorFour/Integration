@@ -27,7 +27,7 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <AuthProvider>
         <Stack initialRouteName="index">
-          {/* Tela inicial (login) */}
+          
           <Stack.Screen name="index" options={{ headerShown: false }} />
 
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -41,6 +41,8 @@ export default function RootLayout() {
           />
 
           <Stack.Screen name="+not-found" />
+
+          <Stack.Screen name="book" options={{ headerShown: false }} />
         </Stack>
       </AuthProvider>
       <StatusBar style="dark" />
