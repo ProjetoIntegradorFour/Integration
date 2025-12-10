@@ -11,6 +11,7 @@ interface Book {
   author: string;
   cover: string;
   availableCopies: number;
+   description?: string;
 }
 
 interface BooksStore {
@@ -29,30 +30,46 @@ export const useBooksStore = create<BooksStore>((set, get) => ({
   error: null,
 
   fetchBooks: async () => {
-    try {
-      set({ loading: true, error: null });
-      const list = await getAllBooks();
-      set({ books: list, loading: false });
-    } catch (e) {
-      set({ loading: false, error: "Erro ao carregar livros" });
-    }
-  },
+  set({ loading: true, error: null });
+
+  try {
+    const list = await getAllBooks();
+    set({ books: list });
+  } catch (e) {
+    set({ error: "Erro ao carregar livros" });
+  } finally {
+    set({ loading: false });
+  }
+},
 
   fetchBook: async (isbn) => {
-    const cached = get().books.find((b) => b.isbn === isbn);
-    if (cached) return cached;
+  // Procurar em cache SOMENTE se já existe descrição
+  const cached = get().books.find((b) => b.isbn === isbn && b.description);
+  if (cached) return cached;
 
-    try {
-      set({ loading: true });
-      const data = await getBookByIsbn(isbn);
+  try {
+    set({ loading: true });
+    const data = await getBookByIsbn(isbn);
 
-      set((state) => ({ books: [...state.books, data], loading: false }));
-      return data;
-    } catch (err) {
-      set({ loading: false, error: "Erro ao carregar livro" });
-      return null;
-    }
-  },
+    const formatted: Book = {
+      isbn: data.isbn,
+      title: data.title,
+      author: data.authors,
+      cover: data.coverUrl,
+      availableCopies: data.availableCopies ?? 0,
+      description: data.description ?? "Sem descrição disponível.",
+    };
+
+    // NÃO mexer no array principal de books!
+    set({ loading: false });
+
+    return formatted;
+  } catch (err) {
+    set({ loading: false, error: "Erro ao carregar livro" });
+    return null;
+  }
+},
+
 
   searchBooks: async (query: string) => {
     if (!query.trim()) {
