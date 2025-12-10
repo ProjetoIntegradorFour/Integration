@@ -14,12 +14,13 @@ export default function Profile() {
     phone: "(15) 99762-6673",
     status: "Bloqueada",
     multa: true,
-    avatar: require("@/assets/images/gatoserio.jpg"),
+    avatar:
+      "https://st4.depositphotos.com/4046139/19878/i/1600/depositphotos_198781686-stock-photo-happy-little-boy-at-school.jpg",
   };
 
   const handleLogout = async () => {
     await logout();
-    router.replace("./index");
+    router.replace("/");
   };
 
   return (
@@ -27,23 +28,13 @@ export default function Profile() {
       {/* Card do usuário */}
       <View style={styles.card}>
         <View style={styles.row}>
-          {/* Foto + botão alinhados */}
           <View style={styles.avatarContainer}>
-            <Image source={user.avatar} style={styles.avatar} />
-            <CustomButton
-              title="Alterar Foto"
-              variant="filled"
-              color="#8000ff"
-              onPress={() => console.log("Alterar Foto")}
-              style={styles.smallButton}
-            />
+            <Image source={{ uri: user.avatar }} style={styles.avatar} />
           </View>
 
           {/* Informações do usuário */}
           <View style={styles.info}>
             <Text style={styles.name}>{user.name}</Text>
-            <Text style={styles.email}>{user.email}</Text>
-            <Text style={styles.phone}>{user.phone}</Text>
 
             <View style={styles.statusContainer}>
               <Text style={styles.status}>
@@ -58,12 +49,18 @@ export default function Profile() {
 
       {/* Opções abaixo */}
       <View style={styles.options}>
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => router.push("/appSettings")}
+        >
           <Ionicons name="settings-outline" size={22} color="#444" />
           <Text style={styles.optionText}>Configurações do App</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity
+          style={styles.option}
+          onPress={() => router.push("/accountSettings")}
+        >
           <Ionicons name="person-outline" size={22} color="#444" />
           <Text style={styles.optionText}>Configurações da Conta</Text>
         </TouchableOpacity>
@@ -85,92 +82,117 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#F5F5F7",
     alignItems: "center",
-    paddingTop: 30,
+    paddingTop: 40,
   },
+
   card: {
-    borderWidth: 1.5,
-    borderColor: "#9C27B0",
-    borderRadius: 12,
-    padding: 15,
-    width: "90%",
+    width: "92%",
     backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   avatarContainer: {
     alignItems: "center",
-    marginRight: 20,
+    marginRight: 18,
   },
+
   avatar: {
-    width: 85,
-    height: 85,
-    borderRadius: 45,
-    marginBottom: 6,
+    width: 100,
+    height: 100,
+    borderRadius: 60,
   },
+
   info: {
     flex: 1,
   },
+
   name: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#222",
   },
+
   email: {
-    color: "blue",
-    textDecorationLine: "underline",
+    marginTop: 4,
+    color: "#6A5ACD",
     fontSize: 15,
+    textDecorationLine: "underline",
   },
+
   phone: {
     fontSize: 15,
-    marginTop: 2,
+    marginTop: 4,
+    color: "#444",
   },
+
   statusContainer: {
-    marginTop: 10,
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: "#FBE9E7",
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: "#E53935",
   },
+
   status: {
-    fontWeight: "bold",
+    fontWeight: "600",
     fontSize: 14,
+    color: "#444",
   },
+
   blocked: {
-    color: "red",
+    color: "#D32F2F",
+    fontWeight: "700",
   },
+
   multa: {
-    color: "red",
-    marginTop: 2,
+    color: "#C62828",
+    marginTop: 4,
     fontSize: 14,
+    fontWeight: "500",
   },
+
   options: {
-    marginTop: "43%",
-    width: "90%",
+    marginTop: 40,
+    width: "92%",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
+
   option: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 15,
+    paddingVertical: 17,
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
+
   optionText: {
     marginLeft: 12,
     fontSize: 16,
     color: "#333",
+    fontWeight: "500",
   },
+
   logout: {
-    marginTop: 5,
     borderBottomWidth: 0,
-  },
-  smallButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    minWidth: 0,
-    marginTop: 8,
-    alignSelf: "center",
   },
 });

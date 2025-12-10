@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useFavoritesStore } from "../store/useFavoritesStore";
 import { useReservedStore } from "../store/useReservedStore";
