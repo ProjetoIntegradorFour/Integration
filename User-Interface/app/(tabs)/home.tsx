@@ -78,25 +78,25 @@ export default function App() {
                 id: "4",
                 name: "Carolina Maria de Jesus",
                 image:
-                  "https://s5.static.brasilescola.uol.com.br/be/2022/08/machado-assis.jpg",
+                  "https://s2.static.brasilescola.uol.com.br/be/2020/03/escritora-c.jpg",
               },
               {
                 id: "5",
                 name: "Cecília Meireles",
                 image:
-                  "https://s5.static.brasilescola.uol.com.br/be/2022/08/machado-assis.jpg",
+                  "https://static.todamateria.com.br/upload/mi/23/mi2325797636722939d-0.jpg",
               },
               {
                 id: "6",
                 name: "Monteiro Lobato",
                 image:
-                  "https://s5.static.brasilescola.uol.com.br/be/2022/08/machado-assis.jpg",
+                  "https://static.todamateria.com.br/upload/55/02/5502b98ebe995-monteiro-lobato-large.jpg",
               },
               {
                 id: "7",
                 name: "Jorge Amado",
                 image:
-                  "https://s5.static.brasilescola.uol.com.br/be/2022/08/machado-assis.jpg",
+                  "https://static.todamateria.com.br/upload/57/44/57449a7fe6be7-jorge-amado.jpg",
               },
             ]}
             scrollSpeed={0.3}
