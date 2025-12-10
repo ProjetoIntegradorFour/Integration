@@ -85,7 +85,7 @@ export default function BookDetails({ book, onReserve }: BookDetailsProps) {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={[styles.favButton, { backgroundColor: "#8A2BE2" }]}
+        style={[styles.favButton, { backgroundColor: reserved ? "#510981ff": "#110981ff" }]}
         onPress={() =>
           reserved ? removeReserved(book.isbn) : addReserved(reservedPayload)
         }
