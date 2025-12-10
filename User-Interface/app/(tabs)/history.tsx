@@ -33,11 +33,11 @@ export default function History() {
 
   // filtros de  aba
   const filteredBooks =
-  tab === "ativo"
-    ? books
-    : tab === "recentes"
-    ? books.slice(0, 1)
-    : reservas;
+    tab === "ativo"
+      ? books
+      : tab === "recentes"
+        ? books.slice(0, 1)
+        : reservas;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 50 }}>
@@ -89,18 +89,26 @@ export default function History() {
 
       </View>
       {/* ==================================================== */}
+      {filteredBooks.length === 0 ? (
+        <View style={{ alignItems: "center", marginTop: 20 }}>
+          <Text style={{ color: "#666", fontSize: 16 }}>
+            Nenhum livro encontrado aqui.
+          </Text>
+        </View>
+      ) : (
+        filteredBooks.map((book) => (
+          <CardBook
+            key={book.id}
+            title={book.title}
+            author={book.author}
+            isbn={`https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`}
+            dueDate={book.due_date}
+            status={book.status}
+            onRenew={() => console.log(`Renovar ${book.title}`)}
+          />
+        ))
+      )}
 
-      {filteredBooks.map((book) => (
-        <CardBook
-          key={book.id}
-          title={book.title}
-          author={book.author}
-          isbn={`https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`}
-          dueDate={book.due_date}
-          status={book.status}
-          onRenew={() => console.log(`Renovar ${book.title}`)}
-        />
-      ))}
     </ScrollView>
   );
 }
