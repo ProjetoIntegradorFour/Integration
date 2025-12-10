@@ -74,42 +74,9 @@ export default function Explore() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          <Carousel
-            title="Livros Clássicos"
-            data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
-          />
-          <Carousel
-            title="Apostilas"
-            data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
-          />
-          <Carousel
-            title="Ciência Política"
-            data={carouselData}
-            renderButton={(book) => (
-              <CustomButton
-                title="RENOVAR"
-                variant="outline"
-                color="#007bff"
-                onPress={() => console.log("Reservou", book.title)}
-              />
-            )}
-          />
+          <Carousel title="Livros Clássicos" data={carouselData} />
+          <Carousel title="Apostilas" data={carouselData} />
+          <Carousel title="Ciência Política" data={carouselData} />
         </View>
       </ScrollView>
     </View>
