@@ -43,6 +43,10 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
 
           <Stack.Screen name="book" options={{ headerShown: false }} />
+
+          <Stack.Screen name="loans" options={{ headerShown: false }} />
+
+          <Stack.Screen name="book/status" options={{ headerTitle: "Voltar" }} />
         </Stack>
       </AuthProvider>
       <StatusBar style="dark" />

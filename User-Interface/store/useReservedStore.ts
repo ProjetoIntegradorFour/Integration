@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 export interface ReservedBook {
-  id: string;
   isbn: string;
   title: string;
   author: string;
@@ -10,8 +9,10 @@ export interface ReservedBook {
 
 interface ReservedState {
   reserved: ReservedBook[];
+
   addReserved: (book: ReservedBook) => void;
   removeReserved: (isbn: string) => void;
+
   isReserved: (isbn: string) => boolean;
 }
 
@@ -20,7 +21,7 @@ export const useReservedStore = create<ReservedState>((set, get) => ({
 
   addReserved: (book) =>
     set((state) => ({
-      reserved: [...state.reserved, book],
+      reserved: [...state.reserved.filter((b) => b.isbn !== book.isbn), book],
     })),
 
   removeReserved: (isbn) =>

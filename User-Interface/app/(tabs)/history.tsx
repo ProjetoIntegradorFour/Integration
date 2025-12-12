@@ -1,123 +1,130 @@
-import CardBook from "@/components/CardBook";
-import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { useReservedStore } from "@/store/useReservedStore";
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import { useLoanStore } from "../../store/useLoanStore";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function History() {
-  const [activeBooks, setActiveBooks] = useState<any[]>([]);
-  const [recentBooks, setRecentBooks] = useState<any[]>([]);
-  const reservas = useReservedStore((state) => state.reserved);
+export default function HistoryPage() {
+  const { loans, returnBook } = useLoanStore();
 
-  const [tab, setTab] = useState<"ativo" | "recentes" | "reservas">("ativo");
+  const handleReturn = (isbn: string) => {
+    returnBook(isbn);
+  };
 
-  useEffect(() => {
-    // livros EMPRÉSTIMO ATIVO
-    const mockAtivos = [
-      {
-        id: 1,
-        title: "A Revolução dos Bichos",
-        author: "George Orwell",
-        isbn: "9780451526342",
-        due_date: "2025-08-22",
-        status: "ok",
-      },
-      {
-        id: 2,
-        title: "O Hobbit",
-        author: "J.R.R. Tolkien",
-        isbn: "9780547928227",
-        due_date: "2025-07-10",
-        status: "due_soon",
-      },
-    ];
+  const renderLoanItem = ({ item }: any) => (
+    <View style={styles.card}>
+      <Image source={{ uri: item.image }} style={styles.cover} />
 
-    // livros RECENTES (devolvidos recentemente)
-    const mockRecentes = [
-      {
-        id: 3,
-        title: "Dom Casmurro",
-        author: "Machado de Assis",
-        isbn: "9788594318600",
-        due_date: "2025-06-01",
-        status: "ok",
-      },
-      {
-        id: 4,
-        title: "O Pequeno Príncipe",
-        author: "Antoine de Saint-Exupéry",
-        isbn: "9780156012195",
-        due_date: "2025-05-20",
-        status: "ok",
-      },
-    ];
+      <View style={{ flex: 1 }}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.author}>{item.author}</Text>
+        <Text style={styles.due}>Devolver até: {item.dueDate}</Text>
 
-    setActiveBooks(mockAtivos);
-    setRecentBooks(mockRecentes);
-  }, []);
-
-  // filtros de aba
-  const filteredBooks =
-    tab === "ativo"
-      ? activeBooks
-      : tab === "recentes"
-        ? recentBooks
-        : reservas;
+        <TouchableOpacity
+          style={styles.returnButton}
+          onPress={() => handleReturn(item.isbn)}
+        >
+          <Ionicons name="checkmark-circle" size={20} color="#fff" />
+          <Text style={styles.returnText}>Devolver</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 50 }}>
-      {/* ======================= ABAS ======================= */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          gap: 10,
-          marginBottom: 25,
-        }}
-      >
-        {["ativo", "recentes", "reservas"].map((v) => (
-          <TouchableOpacity
-            key={v}
-            onPress={() => setTab(v as any)}
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 6,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: tab === v ? "#8A2BE2" : "#cccccc",
-              backgroundColor: tab === v ? "#8A2BE2" : "white",
-            }}
-          >
-            <Text style={{ color: tab === v ? "white" : "#333" }}>{v}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+    <View style={styles.container}>
+      <Text style={styles.sectionTitle}>Empréstimos Ativos</Text>
 
-      {/* ======================= LISTA ======================= */}
-      {filteredBooks.length === 0 ? (
-        <View style={{ alignItems: "center", marginTop: 20 }}>
-          <Text style={{ color: "#666", fontSize: 16 }}>
-            Nenhum livro encontrado aqui.
-          </Text>
-        </View>
+      {loans.length === 0 ? (
+        <Text style={styles.empty}>Você não tem livros emprestados.</Text>
       ) : (
-        filteredBooks.map((book) => {
-          const coverUrl =
-            book.image ??
-            `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-
-          return (
-            <CardBook
-              key={book.id || book.isbn}
-              title={book.title}
-              author={book.author}
-              isbn={book.isbn}
-              coverUrl={coverUrl}
-              dueDate={book.due_date}
-              status={book.status}
-            />
-          );
-        })
+        <FlatList
+          data={loans}
+          renderItem={renderLoanItem}
+          keyExtractor={(item) => item.isbn}
+        />
       )}
-    </ScrollView>
+
+      <View style={{ height: 20 }} />
+
+      <Text style={styles.sectionTitle}>Histórico</Text>
+      <Text style={styles.emptySecondary}>
+        O histórico ainda não está habilitado no sistema.
+      </Text>
+      <Text style={styles.emptyHint}>
+        (Posso ativar quando quiser, é só pedir 😉)
+      </Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: "#fafafa" },
+
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#9C27B0",
+    marginBottom: 10,
+  },
+
+  empty: {
+    fontSize: 15,
+    color: "#999",
+    marginBottom: 20,
+  },
+
+  emptySecondary: {
+    fontSize: 15,
+    color: "#777",
+  },
+
+  emptyHint: {
+    fontSize: 13,
+    color: "#aaa",
+    fontStyle: "italic",
+  },
+
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 3,
+    gap: 12,
+  },
+
+  cover: {
+    width: 60,
+    height: 90,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+  },
+
+  title: { fontSize: 16, fontWeight: "bold", color: "#333" },
+  author: { fontSize: 14, color: "#666" },
+
+  due: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#D32F2F",
+    fontWeight: "600",
+  },
+
+  returnButton: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#9C27B0",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+
+  returnText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+});
