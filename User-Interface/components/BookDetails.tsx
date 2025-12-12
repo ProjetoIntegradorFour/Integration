@@ -116,8 +116,8 @@ export default function BookDetails({ book }: any) {
         </TouchableOpacity>
       </View>
     );
-  } 
-  
+  }
+
   else if (adjustedCopies > 0) {
     mainButton = (
       <TouchableOpacity
@@ -128,8 +128,8 @@ export default function BookDetails({ book }: any) {
         <Text style={styles.actionButtonText}>Empréstimo</Text>
       </TouchableOpacity>
     );
-  } 
-  
+  }
+
   else if (userIsInWaitlist) {
     mainButton = (
       <View style={[styles.actionBox, styles.statusWaitlist]}>
@@ -143,8 +143,8 @@ export default function BookDetails({ book }: any) {
         </TouchableOpacity>
       </View>
     );
-  } 
-  
+  }
+
   else {
     mainButton = (
       <TouchableOpacity
@@ -185,8 +185,6 @@ export default function BookDetails({ book }: any) {
           </Text>
         </View>
 
-        <View style={styles.mainActionWrapper}>{mainButton}</View>
-
         <TouchableOpacity
           style={[
             styles.utilityButton,
@@ -209,6 +207,9 @@ export default function BookDetails({ book }: any) {
               : "Adicionar aos Favoritos"}
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.mainActionWrapper}>{mainButton}</View>
+
       </View>
     </ScrollView>
   );

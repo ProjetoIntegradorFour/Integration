@@ -21,7 +21,13 @@ export const useReservedStore = create<ReservedState>((set, get) => ({
 
   addReserved: (book) =>
     set((state) => ({
-      reserved: [...state.reserved.filter((b) => b.isbn !== book.isbn), book],
+      reserved: [
+        ...state.reserved.filter((b) => b.isbn !== book.isbn),
+        {
+          ...book,
+          image: book.image, // garante consistência
+        },
+      ],
     })),
 
   removeReserved: (isbn) =>

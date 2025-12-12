@@ -50,7 +50,6 @@ export default function App() {
       showsVerticalScrollIndicator={false}
     >
       <View style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 0 }}>
-        <ThemedText>
           <Carousel title="Novidades" data={carouselData} />
 
           <AuthorCarousel
@@ -104,7 +103,6 @@ export default function App() {
           />
 
           <Carousel title="Livros Populares" data={carouselData} />
-        </ThemedText>
       </View>
     </ScrollView>
   );

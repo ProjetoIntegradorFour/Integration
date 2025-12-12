@@ -1,130 +1,124 @@
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, Image } from "react-native";
 import { useLoanStore } from "../../store/useLoanStore";
-import { Ionicons } from "@expo/vector-icons";
+import { useReservedStore } from "../../store/useReservedStore";
+import { useHistoryStore } from "../../store/useHistoryStore";
+import { useRouter } from "expo-router";
 
-export default function HistoryPage() {
-  const { loans, returnBook } = useLoanStore();
+export default function HistoryScreen() {
+  const [tab, setTab] = useState<"active" | "reserved" | "history">("active");
 
-  const handleReturn = (isbn: string) => {
-    returnBook(isbn);
+  const { loans } = useLoanStore();
+  const { reserved } = useReservedStore();
+  const { history } = useHistoryStore();
+
+  const router = useRouter();
+
+  const lists = {
+    active: loans,
+    reserved,
+    history,
   };
 
-  const renderLoanItem = ({ item }: any) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.cover} />
+  const renderCard = (item: any) => (
+    <TouchableOpacity
+      onPress={() => router.push(`/book/${item.isbn}`)}
+      style={{
+        backgroundColor: "white",
+        padding: 12,
+        marginVertical: 8,
+        flexDirection: "row",
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      }}
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={{
+          width: 70,
+          height: 100,
+          borderRadius: 8,
+          marginRight: 12,
+          backgroundColor: "#eee",
+        }}
+      />
 
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.author}>{item.author}</Text>
-        <Text style={styles.due}>Devolver até: {item.dueDate}</Text>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{item.title}</Text>
+        <Text style={{ opacity: 0.6 }}>{item.author}</Text>
 
-        <TouchableOpacity
-          style={styles.returnButton}
-          onPress={() => handleReturn(item.isbn)}
-        >
-          <Ionicons name="checkmark-circle" size={20} color="#fff" />
-          <Text style={styles.returnText}>Devolver</Text>
-        </TouchableOpacity>
+        {item.dueDate && !item.returnDate && (
+          <Text style={{ marginTop: 6, color: "#9C27B0" }}>
+            Devolução: {item.dueDate}
+          </Text>
+        )}
+
+        {item.returnDate && (
+          <Text style={{ marginTop: 6, color: "green" }}>
+            Devolvido em: {item.returnDate}
+          </Text>
+        )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Empréstimos Ativos</Text>
+    <View style={{ flex: 1, backgroundColor: "#fafafa", padding: 16 }}>
+      {/* Tabs */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          marginBottom: 20,
+        }}
+      >
+        {["active", "reserved", "history"].map((key) => (
+          <TouchableOpacity
+            key={key}
+            onPress={() => setTab(key as any)}
+            style={{
+              paddingVertical: 8,
+              paddingHorizontal: 14,
+              borderRadius: 20,
+              backgroundColor: tab === key ? "#9C27B0" : "#E0E0E0",
+            }}
+          >
+            <Text
+              style={{
+                color: tab === key ? "white" : "black",
+                fontWeight: "bold",
+              }}
+            >
+              {key === "active"
+                ? "Ativos"
+                : key === "reserved"
+                  ? "Reservados"
+                  : "Histórico"}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-      {loans.length === 0 ? (
-        <Text style={styles.empty}>Você não tem livros emprestados.</Text>
-      ) : (
-        <FlatList
-          data={loans}
-          renderItem={renderLoanItem}
-          keyExtractor={(item) => item.isbn}
-        />
-      )}
-
-      <View style={{ height: 20 }} />
-
-      <Text style={styles.sectionTitle}>Histórico</Text>
-      <Text style={styles.emptySecondary}>
-        O histórico ainda não está habilitado no sistema.
-      </Text>
-      <Text style={styles.emptyHint}>
-        (Posso ativar quando quiser, é só pedir 😉)
-      </Text>
+      <FlatList
+        data={lists[tab]}
+        keyExtractor={(item) => item.isbn}
+        renderItem={({ item }) => renderCard(item)}
+        ListEmptyComponent={() => (
+          <Text
+            style={{
+              textAlign: "center",
+              opacity: 0.5,
+              marginTop: 40,
+              fontSize: 16,
+            }}
+          >
+            Nada por aqui ainda...
+          </Text>
+        )}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fafafa" },
-
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#9C27B0",
-    marginBottom: 10,
-  },
-
-  empty: {
-    fontSize: 15,
-    color: "#999",
-    marginBottom: 20,
-  },
-
-  emptySecondary: {
-    fontSize: 15,
-    color: "#777",
-  },
-
-  emptyHint: {
-    fontSize: 13,
-    color: "#aaa",
-    fontStyle: "italic",
-  },
-
-  card: {
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
-    gap: 12,
-  },
-
-  cover: {
-    width: 60,
-    height: 90,
-    borderRadius: 8,
-    backgroundColor: "#eee",
-  },
-
-  title: { fontSize: 16, fontWeight: "bold", color: "#333" },
-  author: { fontSize: 14, color: "#666" },
-
-  due: {
-    marginTop: 4,
-    fontSize: 14,
-    color: "#D32F2F",
-    fontWeight: "600",
-  },
-
-  returnButton: {
-    marginTop: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#9C27B0",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-
-  returnText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

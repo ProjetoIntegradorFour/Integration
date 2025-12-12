@@ -1,52 +1,74 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { useReservedStore } from "@/store/useReservedStore";
-import { useLoanStore } from "@/store/useLoanStore";
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { router } from "expo-router";
+import { useReservedStore } from "../../store/useReservedStore";
 
 export default function ReservedList() {
-  const reserved = useReservedStore((s) => s.reserved);
-  const removeReserved = useReservedStore((s) => s.removeReserved);
-  const loanBook = useLoanStore((s) => s.loanBook);
+  const { reserved } = useReservedStore();
 
-  if (reserved.length === 0)
-    return <Text>Nenhuma reserva.</Text>;
+  if (!reserved.length) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Nenhum livro reservado.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={{ gap: 16 }}>
+    <View style={styles.container}>
       {reserved.map((b) => (
-        <View key={b.isbn} style={{ flexDirection: "row", gap: 12 }}>
-          <Image
-            source={{ uri: b.image }}
-            style={{ width: 60, height: 90, borderRadius: 4 }}
-          />
+        <TouchableOpacity
+          key={b.isbn}
+          style={styles.card}
+          onPress={() =>
+            router.push({
+              pathname: "/book/[id]",
+              params: { id: b.isbn },
+            })
+          }
+        >
+          <Image source={{ uri: b.image }} style={styles.image} />
 
           <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: "700" }}>{b.title}</Text>
-            <Text>{b.author}</Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                // criar dueDate para empréstimo
-                const dueDate = new Date();
-                dueDate.setDate(dueDate.getDate() + 7); // devolução em 7 dias
-
-                loanBook({
-                  isbn: b.isbn,
-                  title: b.title,
-                  author: b.author,
-                  image: b.image,
-                  dueDate: dueDate.toISOString().split("T")[0], // YYYY-MM-DD
-                });
-
-                removeReserved(b.isbn);
-              }}
-            >
-              <Text style={{ color: "green", marginTop: 6 }}>
-                Mover para empréstimo
-              </Text>
-            </TouchableOpacity>
+            <Text style={styles.title}>{b.title}</Text>
+            <Text style={styles.subtitle}>{b.author}</Text>
+            <Text style={styles.tag}>Reservado</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { padding: 16 },
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  image: {
+    width: 60,
+    height: 85,
+    borderRadius: 10,
+    marginRight: 14,
+  },
+  title: { fontSize: 17, fontWeight: "700", color: "#222" },
+  subtitle: { fontSize: 14, color: "#555", marginTop: 2 },
+  tag: {
+    marginTop: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    backgroundColor: "#6C5CE710",
+    color: "#6C5CE7",
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  emptyContainer: { padding: 20, alignItems: "center" },
+  emptyText: { color: "#555", fontSize: 16, fontWeight: "600" },
+});
