@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useHistoryStore } from "./useHistoryStore";
+import { sendLocalNotification } from "@/services/notifications";
 
 interface LoanItem {
   isbn: string;
@@ -20,16 +21,21 @@ interface LoanStore {
 export const useLoanStore = create<LoanStore>((set, get) => ({
   loans: [],
 
-  loanBook: (item) =>
+  loanBook: (item) => {
     set((state) => ({
       loans: [...state.loans.filter((l) => l.isbn !== item.isbn), item],
-    })),
+    }));
+
+    sendLocalNotification(
+      "📕 Empréstimo realizado",
+      `Você pegou "${item.title}". Devolução até ${item.dueDate}.`
+    );
+  },
 
   returnBook: (isbn) => {
     const book = get().loans.find((l) => l.isbn === isbn);
     if (!book) return;
 
-    // envia pro histórico (não passe returnedAt — a historyStore adiciona essa data)
     useHistoryStore.getState().addHistory({
       id: `${book.isbn}-${Date.now()}`,
       isbn: book.isbn,
@@ -39,10 +45,14 @@ export const useLoanStore = create<LoanStore>((set, get) => ({
       dueDate: book.dueDate,
     });
 
-    // remove do ativo
     set((state) => ({
       loans: state.loans.filter((l) => l.isbn !== isbn),
     }));
+
+    sendLocalNotification(
+      "✅ Livro devolvido",
+      `"${book.title}" foi devolvido com sucesso.`
+    );
   },
 
   isLoaned: (isbn) => get().loans.some((l) => l.isbn === isbn),
