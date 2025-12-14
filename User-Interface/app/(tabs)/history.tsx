@@ -1,123 +1,124 @@
-import CardBook from "@/components/CardBook";
-import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { useReservedStore } from "@/store/useReservedStore";
+import { useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, Image } from "react-native";
+import { useLoanStore } from "../../store/useLoanStore";
+import { useReservedStore } from "../../store/useReservedStore";
+import { useHistoryStore } from "../../store/useHistoryStore";
+import { useRouter } from "expo-router";
 
-export default function History() {
-  const [activeBooks, setActiveBooks] = useState<any[]>([]);
-  const [recentBooks, setRecentBooks] = useState<any[]>([]);
-  const reservas = useReservedStore((state) => state.reserved);
+export default function HistoryScreen() {
+  const [tab, setTab] = useState<"active" | "reserved" | "history">("active");
 
-  const [tab, setTab] = useState<"ativo" | "recentes" | "reservas">("ativo");
+  const { loans } = useLoanStore();
+  const { reserved } = useReservedStore();
+  const { history } = useHistoryStore();
 
-  useEffect(() => {
-    // livros EMPRÉSTIMO ATIVO
-    const mockAtivos = [
-      {
-        id: 1,
-        title: "A Revolução dos Bichos",
-        author: "George Orwell",
-        isbn: "9780451526342",
-        due_date: "2025-08-22",
-        status: "ok",
-      },
-      {
-        id: 2,
-        title: "O Hobbit",
-        author: "J.R.R. Tolkien",
-        isbn: "9780547928227",
-        due_date: "2025-07-10",
-        status: "due_soon",
-      },
-    ];
+  const router = useRouter();
 
-    // livros RECENTES (devolvidos recentemente)
-    const mockRecentes = [
-      {
-        id: 3,
-        title: "Dom Casmurro",
-        author: "Machado de Assis",
-        isbn: "9788594318600",
-        due_date: "2025-06-01",
-        status: "ok",
-      },
-      {
-        id: 4,
-        title: "O Pequeno Príncipe",
-        author: "Antoine de Saint-Exupéry",
-        isbn: "9780156012195",
-        due_date: "2025-05-20",
-        status: "ok",
-      },
-    ];
+  const lists = {
+    active: loans,
+    reserved,
+    history,
+  };
 
-    setActiveBooks(mockAtivos);
-    setRecentBooks(mockRecentes);
-  }, []);
+  const renderCard = (item: any) => (
+    <TouchableOpacity
+      onPress={() => router.push(`/book/${item.isbn}`)}
+      style={{
+        backgroundColor: "white",
+        padding: 12,
+        marginVertical: 8,
+        flexDirection: "row",
+        borderRadius: 12,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      }}
+    >
+      <Image
+        source={{ uri: item.image }}
+        style={{
+          width: 70,
+          height: 100,
+          borderRadius: 8,
+          marginRight: 12,
+          backgroundColor: "#eee",
+        }}
+      />
 
-  // filtros de aba
-  const filteredBooks =
-    tab === "ativo"
-      ? activeBooks
-      : tab === "recentes"
-        ? recentBooks
-        : reservas;
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{item.title}</Text>
+        <Text style={{ opacity: 0.6 }}>{item.author}</Text>
+
+        {item.dueDate && !item.returnDate && (
+          <Text style={{ marginTop: 6, color: "#9C27B0" }}>
+            Devolução: {item.dueDate}
+          </Text>
+        )}
+
+        {item.returnDate && (
+          <Text style={{ marginTop: 6, color: "green" }}>
+            Devolvido em: {item.returnDate}
+          </Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 50 }}>
-      {/* ======================= ABAS ======================= */}
+    <View style={{ flex: 1, backgroundColor: "#fafafa", padding: 16 }}>
+      {/* Tabs */}
       <View
         style={{
           flexDirection: "row",
-          justifyContent: "center",
-          gap: 10,
-          marginBottom: 25,
+          justifyContent: "space-around",
+          marginBottom: 20,
         }}
       >
-        {["ativo", "recentes", "reservas"].map((v) => (
+        {["active", "reserved", "history"].map((key) => (
           <TouchableOpacity
-            key={v}
-            onPress={() => setTab(v as any)}
+            key={key}
+            onPress={() => setTab(key as any)}
             style={{
-              paddingHorizontal: 16,
-              paddingVertical: 6,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: tab === v ? "#8A2BE2" : "#cccccc",
-              backgroundColor: tab === v ? "#8A2BE2" : "white",
+              paddingVertical: 8,
+              paddingHorizontal: 14,
+              borderRadius: 20,
+              backgroundColor: tab === key ? "#9C27B0" : "#E0E0E0",
             }}
           >
-            <Text style={{ color: tab === v ? "white" : "#333" }}>{v}</Text>
+            <Text
+              style={{
+                color: tab === key ? "white" : "black",
+                fontWeight: "bold",
+              }}
+            >
+              {key === "active"
+                ? "Ativos"
+                : key === "reserved"
+                  ? "Reservados"
+                  : "Histórico"}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* ======================= LISTA ======================= */}
-      {filteredBooks.length === 0 ? (
-        <View style={{ alignItems: "center", marginTop: 20 }}>
-          <Text style={{ color: "#666", fontSize: 16 }}>
-            Nenhum livro encontrado aqui.
+      <FlatList
+        data={lists[tab]}
+        keyExtractor={(item) => item.isbn}
+        renderItem={({ item }) => renderCard(item)}
+        ListEmptyComponent={() => (
+          <Text
+            style={{
+              textAlign: "center",
+              opacity: 0.5,
+              marginTop: 40,
+              fontSize: 16,
+            }}
+          >
+            Nada por aqui ainda...
           </Text>
-        </View>
-      ) : (
-        filteredBooks.map((book) => {
-          const coverUrl =
-            book.image ??
-            `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-
-          return (
-            <CardBook
-              key={book.id || book.isbn}
-              title={book.title}
-              author={book.author}
-              isbn={book.isbn}
-              coverUrl={coverUrl}
-              dueDate={book.due_date}
-              status={book.status}
-            />
-          );
-        })
-      )}
-    </ScrollView>
+        )}
+      />
+    </View>
   );
 }
