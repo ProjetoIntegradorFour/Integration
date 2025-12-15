@@ -1,9 +1,10 @@
 import Carousel from "@/components/Carousel";
 import CategoryMenu from "@/components/CategoryMenu";
 import CustomButton from "@/components/CustomButton";
-import { useBooksStore } from "@/store/useBooksStore";
+import { groupBooksByGenre, useBooksStore } from "@/store/useBooksStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
+import type { Book } from "@/store/useBooksStore";
 import {
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { GENRES } from "@/constants/genres";
 
 export default function Explore() {
   const { books, fetchBooks, searchBooks, loading } = useBooksStore();
@@ -26,12 +28,15 @@ export default function Explore() {
     await searchBooks(text);
   }
 
-  const carouselData = books.map((b) => ({
-    id: b.isbn,
-    title: b.title,
-    image: b.cover,
-    isbn: b.isbn,
-  }));
+  const booksByGenre = groupBooksByGenre(books);
+
+  const mapToCarousel = (books: Book[]) =>
+    books.map((b) => ({
+      id: b.isbn,
+      title: b.title,
+      image: b.cover,
+      isbn: b.isbn,
+    }));
 
   return (
     <View style={styles.container}>
@@ -74,9 +79,37 @@ export default function Explore() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-          <Carousel title="Livros Clássicos" data={carouselData} />
-          <Carousel title="Apostilas" data={carouselData} />
-          <Carousel title="Ciência Política" data={carouselData} />
+          {GENRES.map(
+            (genre) =>
+              booksByGenre[genre]?.length > 0 && (
+                <Carousel
+                  key={genre}
+                  title={genre}
+                  data={mapToCarousel(booksByGenre[genre])}
+                />
+              )
+          )}
+          {GENRES.map(
+            (genre) =>
+              booksByGenre[genre]?.length > 0 && (
+                <Carousel
+                  key={genre}
+                  title={genre}
+                  data={mapToCarousel(booksByGenre[genre])}
+                />
+              )
+          )}
+
+          {GENRES.map(
+            (genre) =>
+              booksByGenre[genre]?.length > 0 && (
+                <Carousel
+                  key={genre}
+                  title={genre}
+                  data={mapToCarousel(booksByGenre[genre])}
+                />
+              )
+          )}
         </View>
       </ScrollView>
     </View>
