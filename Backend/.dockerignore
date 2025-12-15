@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Maven build output
+target/
+
+# Build tools
+build/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+
+# Maven wrapper caches
+.mvn/

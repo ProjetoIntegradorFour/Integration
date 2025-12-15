@@ -26,10 +26,8 @@ public class IsbnLookupService {
         log.info("Fetching metadata for ISBN: {}", isbn);
 
         try {
-            // MODIFIED URL: Using the detailed bulk lookup endpoint for richer data (description and subjects)
             String url = "https://openlibrary.org/api/books?bibkeys=ISBN:" + isbn + "&format=json&jscmd=details";
 
-            // The response is a Map keyed by "ISBN:{isbn}"
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
 
             if (response == null || response.isEmpty()) {
@@ -42,17 +40,14 @@ public class IsbnLookupService {
                 throw new ResourceNotFoundException("Book metadata not found for ISBN in OpenLibrary: " + isbn);
             }
 
-            // The actual book data is nested under ISBN:{isbn} and then under 'details'
             Map<String, Object> bookEntry = (Map<String, Object>) response.get(isbnKey);
             Map<String, Object> detailsMap = (Map<String, Object>) bookEntry.get("details");
 
             if (detailsMap == null || detailsMap.isEmpty()) {
                 log.warn("ISBN {} found, but 'details' map is missing or empty.", isbn);
-                // Fallback to minimal data if details are missing
                 return createFallbackCatalog(isbn);
             }
 
-            // The mapResponseToCatalog method now works with the extracted 'details' map
             return mapResponseToCatalog(isbn, detailsMap);
 
         } catch (HttpClientErrorException.NotFound e) {
@@ -62,7 +57,6 @@ public class IsbnLookupService {
             throw e;
         } catch (Exception e) {
             log.error("Error fetching metadata for ISBN {}: {}", isbn, e.getMessage(), e);
-            // It's good practice to provide a manual entry option on API error
             return createFallbackCatalog(isbn);
         }
     }
@@ -71,18 +65,16 @@ public class IsbnLookupService {
         Catalog catalog = new Catalog();
         catalog.setIsbn(isbn);
 
-        // Title
         String title = (String) data.get("title");
         catalog.setTitle(title != null ? title : "Título Desconhecido");
 
         catalog.setAuthors(extractAuthors(data));
 
-        // Publisher
         List<String> publishers = (List<String>) data.get("publishers");
         catalog.setPublisher(publishers != null && !publishers.isEmpty()
-                ? String.join(", ", publishers) : "Editora Desconhecida");
+                ? String.join(", ", publishers)
+                : "Editora Desconhecida");
 
-        // Published date
         String publishDate = (String) data.get("publish_date");
         catalog.setPublishedDate(publishDate != null ? publishDate : "Data Desconhecida");
 
@@ -96,7 +88,6 @@ public class IsbnLookupService {
 
         catalog.setCoverUrl("https://covers.openlibrary.org/b/isbn/" + isbn + "-L.jpg");
 
-        // Synopsis/Description Logic (The new endpoint often returns this)
         Object descriptionObject = data.get("description");
         String description = null;
         if (descriptionObject instanceof String) {
@@ -107,10 +98,8 @@ public class IsbnLookupService {
 
         catalog.setDescription(description != null ? description : "Sem descrição disponível");
 
-        // GENRES (Subjects) Logic - Fetched successfully from the 'details' map
         List<String> subjects = (List<String>) data.get("subjects");
         if (subjects != null && !subjects.isEmpty()) {
-            // Join subjects into a comma-separated string for database storage
             catalog.setGenres(String.join(", ", subjects));
         } else {
             catalog.setGenres(null);
@@ -125,11 +114,20 @@ public class IsbnLookupService {
         try {
             List<Map<String, String>> authorKeys = (List<Map<String, String>>) data.get("authors");
             if (authorKeys != null && !authorKeys.isEmpty()) {
-                String authors = authorKeys.stream()
+
+                List<String> keys = authorKeys.stream()
                         .map(a -> a.get("key"))
                         .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                String authors = keys.stream()
+                        .map(this::fetchAuthorName)
+                        .filter(name -> name != null && !name.isEmpty())
                         .collect(Collectors.joining(", "));
-                return "OpenLibrary Author Keys: " + authors;
+
+                if (!authors.isEmpty()) {
+                    return authors;
+                }
             }
 
             String byStatement = (String) data.get("by_statement");
@@ -141,6 +139,23 @@ public class IsbnLookupService {
             log.debug("Could not parse authors", e);
         }
         return "Autor Desconhecido";
+    }
+
+    private String fetchAuthorName(String authorKey) {
+        try {
+            String authorUrl = "https://openlibrary.org" + authorKey + ".json";
+
+            Map<String, Object> authorResponse = restTemplate.getForObject(authorUrl, Map.class);
+
+            if (authorResponse != null && authorResponse.containsKey("name")) {
+                return (String) authorResponse.get("name");
+            }
+        } catch (HttpClientErrorException.NotFound e) {
+            log.warn("Author key {} not found.", authorKey);
+        } catch (Exception e) {
+            log.error("Error fetching author name for key {}: {}", authorKey, e.getMessage());
+        }
+        return null;
     }
 
     private Catalog createFallbackCatalog(String isbn) {

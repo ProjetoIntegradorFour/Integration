@@ -16,7 +16,6 @@ public class DataInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        // Initialize roles if they don't exist
         if (!roleRepository.findByName(RoleName.ROLE_USER).isPresent()) {
             Role userRole = new Role(RoleName.ROLE_USER);
             roleRepository.save(userRole);

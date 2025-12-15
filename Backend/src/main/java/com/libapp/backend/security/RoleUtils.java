@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 public class RoleUtils {
 
     private RoleUtils() {
-        // Utility class, prevent instantiation
+
     }
 
     /**

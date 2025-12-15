@@ -23,7 +23,7 @@ public class User {
     private Long id;
 
     @Column(unique = true)
-    private String username;
+    private String name;
 
     private String cpf;
 
@@ -39,7 +39,7 @@ public class User {
     }
 
     public User(String username, String cpf, String password) {
-        this.username = username;
+        this.name = username;
         this.cpf = cpf;
         this.password = password;
     }
@@ -52,12 +52,12 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String username) {
+        this.name = username;
     }
 
     public String getCpf() {

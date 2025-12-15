@@ -51,11 +51,9 @@ public class Copy {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // Constructors
     public Copy() {
     }
 
-    // Getters & Setters
     public Long getId() {
         return id;
     }

@@ -27,7 +27,8 @@ public class CatalogService {
     private final IsbnLookupService isbnLookupService;
     private final CopyService copyService;
 
-    public CatalogService(CatalogRepository catalogRepository, IsbnLookupService isbnLookupService, CopyService copyService) {
+    public CatalogService(CatalogRepository catalogRepository, IsbnLookupService isbnLookupService,
+            CopyService copyService) {
         this.catalogRepository = catalogRepository;
         this.isbnLookupService = isbnLookupService;
         this.copyService = copyService;
@@ -68,6 +69,48 @@ public class CatalogService {
         return catalogRepository.save(metadata);
     }
 
+    public Catalog applyPartialUpdates(Catalog existingCatalog, Catalog updates) {
+        if (updates.getTitle() != null) {
+            existingCatalog.setTitle(updates.getTitle());
+        }
+
+        if (updates.getTitlePt() != null) {
+            existingCatalog.setTitlePt(updates.getTitlePt());
+        }
+
+        if (updates.getAuthors() != null) {
+            existingCatalog.setAuthors(updates.getAuthors());
+        }
+
+        if (updates.getPublisher() != null) {
+            existingCatalog.setPublisher(updates.getPublisher());
+        }
+
+        if (updates.getPublishedDate() != null) {
+            existingCatalog.setPublishedDate(updates.getPublishedDate());
+        }
+
+        if (updates.getLanguage() != null) {
+            existingCatalog.setLanguage(updates.getLanguage());
+        }
+
+        if (updates.getCoverUrl() != null) {
+            existingCatalog.setCoverUrl(updates.getCoverUrl());
+        }
+
+        if (updates.getDescription() != null) {
+            existingCatalog.setDescription(updates.getDescription());
+        }
+
+        if (updates.getGenres() != null) {
+            existingCatalog.setGenres(updates.getGenres());
+        }
+
+        existingCatalog.setIsAdminOverridden(updates.isIsAdminOverridden());
+
+        return existingCatalog;
+    }
+
     public Page<CatalogSummaryDTO> findPublicCatalog(String query, Pageable pageable) {
         String safeQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
 
@@ -90,8 +133,7 @@ public class CatalogService {
                     catalog.getAuthors(),
                     catalog.getCoverUrl(),
                     genres,
-                    availableCopies
-            );
+                    availableCopies);
         });
     }
 }
