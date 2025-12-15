@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -77,13 +78,11 @@ public class WebSecurityConfig {
                 "X-Requested-With",
                 "Accept",
                 "Cache-Control",
-                "Origin"
-        ));
+                "Origin"));
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
-                "Content-Disposition"
-        ));
+                "Content-Disposition"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(corsMaxAge);
 
@@ -98,17 +97,17 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> {
                     authz.requestMatchers(
+                            "/health",
                             "/api/test/all",
-                            "/api/auth/**", // Authentication endpoints
-                            "/api/collections/**", // Legacy collection endpoints
-                            "/catalog/**", // Public catalog browsing
-                            "/v3/api-docs/**", // OpenAPI docs
-                            "/swagger-ui/**", // Swagger UI
-                            "/swagger-ui.html" // Swagger UI HTML
-                    ).permitAll();
+                            "/api/auth/**",
+                            "/api/collections/**",
+                            "/catalog/**",
+                            "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html").permitAll();
 
                     boolean isDevelopment = Arrays.asList(env.getActiveProfiles()).contains("dev")
                             || env.getActiveProfiles().length == 0;
@@ -117,10 +116,12 @@ public class WebSecurityConfig {
                         authz.requestMatchers("/h2-console/**").permitAll();
                     }
 
-                    // Role-based access control
-                    authz.requestMatchers("/api/test/admin").hasAuthority("ROLE_ADMIN")
-                            .requestMatchers("/api/test/user").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                            .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                    authz
+                            .requestMatchers("/health").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/users/test").permitAll()
+                            .requestMatchers("/api/public/**").permitAll()
+                            .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                            .requestMatchers("/api/users/admin/**").hasAuthority("ROLE_ADMIN")
                             .anyRequest().authenticated();
                 });
 

@@ -95,8 +95,8 @@ export default function HistoryScreen() {
               {key === "active"
                 ? "Ativos"
                 : key === "reserved"
-                  ? "Reservados"
-                  : "Histórico"}
+                ? "Reservados"
+                : "Histórico"}
             </Text>
           </TouchableOpacity>
         ))}

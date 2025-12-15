@@ -4,14 +4,16 @@ import {
   getBookByIsbn,
   searchBooks as apiSearchBooks,
 } from "../services/bookService";
+import { GENRES } from "@/constants/genres";
 
-interface Book {
+export interface Book {
   isbn: string;
   title: string;
   author: string;
   cover: string;
   availableCopies: number;
-   description?: string;
+  description?: string;
+  genres?: string[];
 }
 
 interface BooksStore {
@@ -99,3 +101,33 @@ export const useBooksStore = create<BooksStore>((set, get) => ({
     }
   },
 }));
+
+// no final do useBooksStore.ts
+export function groupBooksByGenre(books: Book[]) {
+  const grouped: Record<string, Book[]> = {};
+
+  GENRES.forEach((genre) => {
+    grouped[genre] = [];
+  });
+
+  books.forEach((book) => {
+    if (!book.genres || book.genres.length === 0) {
+      grouped["Outros"].push(book);
+      return;
+    }
+
+    book.genres.forEach((genre) => {
+      if (grouped[genre]) {
+        grouped[genre].push(book);
+      } else {
+        grouped["Outros"].push(book);
+      }
+    });
+  });
+
+  return grouped;
+}
+
+
+
+
