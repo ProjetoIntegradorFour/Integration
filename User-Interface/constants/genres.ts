@@ -9,6 +9,7 @@ export const GENRES = [
   "Ciência Política",
   "Romance",
   "Artes",
+  "Literatura Clássica",
   "Literatura Estrangeira",
   "Outros",
   "Novidades",
