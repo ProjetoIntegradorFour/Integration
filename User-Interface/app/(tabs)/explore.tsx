@@ -89,27 +89,6 @@ export default function Explore() {
                 />
               )
           )}
-          {GENRES.map(
-            (genre) =>
-              booksByGenre[genre]?.length > 0 && (
-                <Carousel
-                  key={genre}
-                  title={genre}
-                  data={mapToCarousel(booksByGenre[genre])}
-                />
-              )
-          )}
-
-          {GENRES.map(
-            (genre) =>
-              booksByGenre[genre]?.length > 0 && (
-                <Carousel
-                  key={genre}
-                  title={genre}
-                  data={mapToCarousel(booksByGenre[genre])}
-                />
-              )
-          )}
         </View>
       </ScrollView>
     </View>

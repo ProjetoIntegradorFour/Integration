@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { useBooksStore } from "@/store/useBooksStore";
 import { groupBooksByGenre } from "@/store/useBooksStore";
 import type { Book } from "@/store/useBooksStore";
-import { GENRES } from "@/constants/genres";
+import { GENRES, NEWS, POPULARS } from "@/constants/genres";
 
 export default function App() {
   const { books, fetchBooks, loading } = useBooksStore();
@@ -56,11 +56,11 @@ export default function App() {
       showsVerticalScrollIndicator={false}
     >
       <View style={{ flex: 1, backgroundColor: "#f9f9f9", paddingTop: 0 }}>
-        {GENRES.map(
+        {NEWS.map(
           (genre) =>
             booksByGenre[genre]?.length > 0 && (
               <Carousel
-                key={genre}
+                key={"genre"}
                 title={genre}
                 data={mapToCarousel(booksByGenre[genre])}
               />
@@ -117,7 +117,7 @@ export default function App() {
           onAuthorPress={(a) => console.log("clicked", a)}
         />
 
-        {GENRES.map(
+        {POPULARS.map(
           (genre) =>
             booksByGenre[genre]?.length > 0 && (
               <Carousel

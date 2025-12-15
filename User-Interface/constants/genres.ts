@@ -11,4 +11,10 @@ export const GENRES = [
   "Artes",
   "Literatura Estrangeira",
   "Outros",
+  "Novidades",
+  "Livros Populares",
 ];
+
+export const POPULARS = ["Livros Populares"];
+export const NEWS = ["Novidades"];
+
