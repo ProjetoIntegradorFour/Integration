@@ -1,5 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 
 interface Notification {
   id: string;
@@ -38,29 +44,19 @@ export default function NotificationScreen() {
           {/* Cabeçalho */}
           <View style={styles.header}>
             <Ionicons
-              name={
-                notif.type === "multa"
-                  ? "cash-outline"
-                  : "book-outline"
-              }
+              name={notif.type === "multa" ? "cash-outline" : "book-outline"}
               size={20}
               color="#9C27B0"
             />
 
             <Text style={styles.headerText}>
-              {notif.title} - <Text style={styles.bookName}>{notif.bookTitle}</Text>
+              {notif.title} -{" "}
+              <Text style={styles.bookName}>{notif.bookTitle}</Text>
             </Text>
           </View>
 
           {/* Mensagem */}
           <Text style={styles.message}>{notif.message}</Text>
-
-          {/* Botão */}
-          {notif.type === "multa" && (
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>VER MULTA</Text>
-            </TouchableOpacity>
-          )}
         </View>
       ))}
     </ScrollView>

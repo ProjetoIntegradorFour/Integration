@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/catalog";
+const API_URL = "https://librarytor6700.duckdns.org/catalog";
 
 export const useCatalogStore = create((set) => ({
   books: [],
@@ -9,7 +9,8 @@ export const useCatalogStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchBooks: async (query = "", page = 0, size = 20) => {
+  fetchBooks: async (query = "", page = 0) => {
+    const size = 10000;
     set({ loading: true, error: null });
 
     try {
