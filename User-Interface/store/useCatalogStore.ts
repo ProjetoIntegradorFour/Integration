@@ -9,8 +9,7 @@ export const useCatalogStore = create((set) => ({
   loading: false,
   error: null,
 
-  fetchBooks: async (query = "", page = 0) => {
-    const size = 10000;
+  fetchBooks: async (query = "", page = 0, size = 200) => {
     set({ loading: true, error: null });
 
     try {
