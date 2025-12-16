@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://librarytor6700.duckdns.org/api",
+  baseURL: "http://10.34.249.247:8080/api",
 });
 
 export default api;
