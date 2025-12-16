@@ -62,11 +62,9 @@ public class Catalog {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // Constructors
     public Catalog() {
     }
 
-    // Getters & Setters
     public Long getId() {
         return id;
     }

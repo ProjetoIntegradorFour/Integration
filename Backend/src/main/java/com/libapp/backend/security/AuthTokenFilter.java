@@ -2,13 +2,13 @@ package com.libapp.backend.security;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,11 +23,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
+
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String cpf = jwtUtils.getCpfFromJwtToken(jwt);
                 List<String> roles = jwtUtils.getRolesFromJwtToken(jwt);
@@ -35,26 +39,20 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 logger.debug("JWT Authentication for CPF: " + cpf);
                 logger.debug("Roles from JWT: " + roles);
 
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(role -> {
-                            String roleName = role;
-                            if (!roleName.startsWith("ROLE_")) {
-                                roleName = "ROLE_" + roleName.toUpperCase();
-                                logger.warn("Role '" + role + "' missing ROLE_ prefix, normalized to '" + roleName + "'");
-                            }
-                            return new SimpleGrantedAuthority(roleName);
-                        })
-                        .collect(Collectors.toList());
+                UserDetails userDetails = userDetailsService.loadUserByUsername(cpf);
 
-                logger.debug("Granted Authorities: " + authorities);
+                logger.debug("Loaded UserDetails: " + userDetails.getUsername());
+                logger.debug("Authorities from UserDetails: " + userDetails.getAuthorities());
 
-                UsernamePasswordAuthenticationToken authentication
-                        = new UsernamePasswordAuthenticationToken(cpf, null, authorities);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                logger.debug("Authentication set successfully for CPF: " + cpf);
+                logger.debug("Authentication set successfully for user: " + userDetails.getUsername());
             }
         } catch (Exception e) {
             logger.error("Cannot set user authentication: " + e.getMessage(), e);

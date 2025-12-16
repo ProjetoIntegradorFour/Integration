@@ -9,14 +9,14 @@ type Props = {
 const categories = [
   "Apostilas",
   "Artes",
-  "Auto Ajuda",
+  "Aventura",
   "Biografias",
   "Ciência Política",
-  "Comunicação",
-  "História Geral",
+  "Ficção",
+  "História",
   "Literatura Clássica",
   "Literatura Estrangeira",
-  "Psicologia",
+  "Romance",
   "Ver Todas As Categorias",
 ];
 

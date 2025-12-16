@@ -8,9 +8,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping; // Changed from PutMapping
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,11 +58,13 @@ public class AdminCatalogController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedCatalog);
     }
 
-    @PutMapping("/{isbn}")
-    public ResponseEntity<Catalog> update(@PathVariable String isbn, @Valid @RequestBody Catalog catalog) {
-        catalog.setIsbn(isbn);
-        Catalog updatedCatalog = catalogService.save(catalog);
-        return ResponseEntity.ok(updatedCatalog);
+    @PatchMapping("/{isbn}")
+    public ResponseEntity<Catalog> updatePartial(@PathVariable String isbn, @RequestBody Catalog catalogUpdates) {
+        Catalog existingCatalog = catalogService.findByIsbn(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Catalog", "ISBN", isbn));
+        Catalog updatedCatalog = catalogService.applyPartialUpdates(existingCatalog, catalogUpdates);
+        Catalog savedCatalog = catalogService.save(updatedCatalog);
+        return ResponseEntity.ok(savedCatalog);
     }
 
     @DeleteMapping("/{isbn}")

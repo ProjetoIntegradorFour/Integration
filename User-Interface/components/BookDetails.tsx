@@ -7,168 +7,338 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import React from "react";
+
 import { useFavoritesStore } from "../store/useFavoritesStore";
 import { useReservedStore } from "../store/useReservedStore";
+import { useLoanStore } from "../store/useLoanStore";
 
-interface BookDetailsProps {
-    book: {
-        isbn: string;
-        title: string;
-        author: string;
-        cover: string;
-        description?: string;
-    } | null;
-    onReserve?: () => void;
-}
-
-export default function BookDetails({ book, onReserve }: BookDetailsProps) {
-    const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
-    const { addReserved, removeReserved, isReserved } = useReservedStore();
-
-    if (!book) {
-        return (
-            <View style={styles.center}>
-                <Text style={{ fontSize: 18 }}>Livro não encontrado.</Text>
-            </View>
-        );
-    }
-
-    const reserved = isReserved(book.isbn);
-
-    const reservedPayload = {
-        id: book.isbn,
-        isbn: book.isbn,
-        title: book.title,
-        author: book.author,
-        image: book.cover,
-    };
-
-    const favorite = isFavorite(book.isbn);
-
-    // mapeia para o formato esperado pela store de favoritos
-    const favoritePayload = {
-        id: book.isbn, // se sua store espera um id independente, usamos o isbn como id
-        isbn: book.isbn,
-        title: book.title,
-        author: book.author,
-        image: book.cover,
-    };
-
+export default function BookDetails({ book }: any) {
+  if (!book) {
     return (
-        <ScrollView
-            style={{ flex: 1, backgroundColor: "#f9f9f9" }}
-            contentContainerStyle={{ paddingVertical: 30 }}
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={styles.container}>
-                <View style={styles.coverWrapper}>
-                    <Image source={{ uri: book.cover }} style={styles.coverImage} />
-                </View>
-
-                <View style={styles.infoBox}>
-                    <Text style={styles.title}>{book.title}</Text>
-                    <Text style={styles.author}>por {book.author}</Text>
-
-                    <View style={styles.line} />
-
-                    <Text style={styles.sectionTitle}>Sinopse</Text>
-                    <Text style={styles.description}>
-                        {book.description ?? "Sem descrição disponível."}
-                    </Text>
-                </View>
-
-                <TouchableOpacity
-                    style={[
-                        styles.favButton,
-                        { backgroundColor: favorite ? "#E91E63" : "#9C27B0" },
-                    ]}
-                    onPress={() =>
-                        favorite ? removeFavorite(book.isbn) : addFavorite(favoritePayload)
-                    }
-                >
-                    <Ionicons
-                        name={favorite ? "heart" : "heart-outline"}
-                        size={24}
-                        color="#fff"
-                    />
-                    <Text style={styles.favText}>
-                        {favorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.favButton, { backgroundColor: reserved ? "#510981ff" : "#110981ff" }]}
-                    onPress={() =>
-                        reserved ? removeReserved(book.isbn) : addReserved(reservedPayload)
-                    }
-                >
-                    <Ionicons name="bookmark" size={24} color="#fff" />
-                    <Text style={styles.favText}>
-                        {reserved ? "Cancelar Reserva" : "Reservar Livro"}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+      <View style={styles.center}>
+        <Text style={{ fontSize: 18 }}>Livro não encontrado.</Text>
+      </View>
     );
+  }
+
+  const { addFavorite, removeFavorite, isFavorite } = useFavoritesStore();
+
+  const {
+    reserved,
+    addReserved,
+    removeReserved,
+    isReserved,
+  } = useReservedStore();
+
+  const {
+    loans,
+    loanBook,
+    returnBook,
+    isLoaned,
+  } = useLoanStore();
+
+  // ============================
+  //   STATUS REAL DO LIVRO
+  // ============================
+  const userHasCopy = isLoaned(book.isbn);
+  const userIsInWaitlist = isReserved(book.isbn);
+
+  const favoritePayload = {
+    id: book.isbn,
+    isbn: book.isbn,
+    title: book.title,
+    author: book.author,
+    image: book.cover,
+  };
+
+  // Cálculo das cópias na UI
+  const adjustedCopies = userHasCopy
+    ? Math.max(book.availableCopies - 1, 0)
+    : book.availableCopies;
+
+  // ============================
+  //        AÇÕES
+  // ============================
+  function handleLoan() {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+
+    const formatted = date.toLocaleDateString("pt-BR");
+
+    loanBook({
+      isbn: book.isbn,
+      title: book.title,
+      author: book.author,
+      image: book.cover,
+      dueDate: formatted,
+    });
+
+    removeReserved(book.isbn);
+  }
+
+  function handleReturn() {
+    returnBook(book.isbn);
+  }
+
+  function handleWaitlist() {
+    addReserved({
+      isbn: book.isbn,
+      title: book.title,
+      author: book.author,
+      image: book.cover,
+    });
+  }
+
+  function handleCancelWaitlist() {
+    removeReserved(book.isbn);
+  }
+
+  // ============================
+  //  BOTÃO PRINCIPAL CONFIG
+  // ============================
+  let mainButton;
+
+  if (userHasCopy) {
+    mainButton = (
+      <View style={[styles.actionBox, styles.statusActive]}>
+        <Text style={styles.actionTextPrimary}>Cópia no seu nome</Text>
+
+        <Text style={styles.actionTextSecondary}>
+          Devolução até: {loans.find((l) => l.isbn === book.isbn)?.dueDate}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={handleReturn}
+        >
+          <Text style={styles.cancelButtonText}>Devolver Livro</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  else if (adjustedCopies > 0) {
+    mainButton = (
+      <TouchableOpacity
+        style={[styles.actionButton, styles.buttonPrimary]}
+        onPress={handleLoan}
+      >
+        <Ionicons name="book" size={22} color="#fff" />
+        <Text style={styles.actionButtonText}>Empréstimo</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  else if (userIsInWaitlist) {
+    mainButton = (
+      <View style={[styles.actionBox, styles.statusWaitlist]}>
+        <Text style={styles.actionTextWaitlist}>Na fila de espera</Text>
+
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={handleCancelWaitlist}
+        >
+          <Text style={styles.cancelButtonText}>Cancelar Espera</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  else {
+    mainButton = (
+      <TouchableOpacity
+        style={[styles.actionButton, styles.buttonSecondary]}
+        onPress={handleWaitlist}
+      >
+        <Ionicons name="hourglass-outline" size={22} color="#9C27B0" />
+        <Text style={styles.actionButtonTextSecondary}>Entrar na fila</Text>
+      </TouchableOpacity>
+    );
+  }
+
+  // ============================
+
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#f9f9f9" }}
+      contentContainerStyle={{ paddingVertical: 30 }}
+    >
+      <View style={styles.container}>
+        <View style={styles.coverWrapper}>
+          <Image source={{ uri: book.cover }} style={styles.coverImage} />
+        </View>
+
+        <View style={styles.infoBox}>
+          <Text style={styles.title}>{book.title}</Text>
+          <Text style={styles.author}>por {book.author}</Text>
+
+          <Text style={styles.statusInfoText}>
+            Cópias disponíveis: {adjustedCopies}
+          </Text>
+
+          <View style={styles.line} />
+
+          <Text style={styles.sectionTitle}>Sinopse</Text>
+          <Text style={styles.description}>
+            {book.description || "Sem descrição disponível."}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.utilityButton,
+            { backgroundColor: isFavorite(book.isbn) ? "#E91E63" : "#9C27B0" },
+          ]}
+          onPress={() =>
+            isFavorite(book.isbn)
+              ? removeFavorite(book.isbn)
+              : addFavorite(favoritePayload)
+          }
+        >
+          <Ionicons
+            name={isFavorite(book.isbn) ? "heart" : "heart-outline"}
+            size={22}
+            color="#fff"
+          />
+          <Text style={styles.utilityText}>
+            {isFavorite(book.isbn)
+              ? "Remover dos Favoritos"
+              : "Adicionar aos Favoritos"}
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.mainActionWrapper}>{mainButton}</View>
+
+      </View>
+    </ScrollView>
+  );
 }
+
+// ============================
+//           STYLES
+// ============================
 
 const styles = StyleSheet.create({
-    container: { padding: 20, gap: 20 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  container: { padding: 20, gap: 20 },
 
-    coverWrapper: {
-        width: 160,
-        height: 240,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        alignSelf: "center",
-        padding: 10,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 3 },
-        shadowRadius: 6,
-        elevation: 6,
-    },
+  coverWrapper: {
+    width: 160,
+    height: 240,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    alignSelf: "center",
+    padding: 10,
+    elevation: 6,
+  },
+  coverImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  },
 
-    coverImage: {
-        width: "100%",
-        height: "100%",
-        borderRadius: 12,
-        resizeMode: "cover",
-    },
+  infoBox: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  title: { fontSize: 22, fontWeight: "bold", color: "#333" },
+  author: { fontSize: 16, color: "#666", marginBottom: 10 },
 
-    infoBox: {
-        backgroundColor: "#fff",
-        padding: 15,
-        borderRadius: 12,
-        elevation: 2,
-    },
+  statusInfoText: {
+    fontSize: 14,
+    color: "#9C27B0",
+    marginBottom: 4,
+    fontWeight: "600",
+  },
 
-    title: { fontSize: 22, fontWeight: "bold", color: "#333", marginBottom: 4 },
+  line: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
 
-    author: { fontSize: 16, color: "#666", marginBottom: 10 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#9C27B0",
+  },
+  description: { fontSize: 15, lineHeight: 21, color: "#444" },
 
-    line: { height: 1, backgroundColor: "#ddd", marginVertical: 10 },
+  mainActionWrapper: { marginTop: 0 },
 
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#9C27B0",
-        marginBottom: 6,
-    },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 10,
+    gap: 8,
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  actionButtonTextSecondary: {
+    color: "#9C27B0",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 
-    description: { fontSize: 15, lineHeight: 21, color: "#444" },
+  buttonPrimary: { backgroundColor: "#9C27B0" },
+  buttonSecondary: {
+    backgroundColor: "#F3E5F5",
+    borderWidth: 2,
+    borderColor: "#9C27B0",
+  },
 
-    favButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: 14,
-        borderRadius: 10,
-        marginTop: 10,
-        gap: 8,
-    },
+  actionBox: {
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  statusActive: {
+    backgroundColor: "#E8F5E9",
+    borderWidth: 2,
+    borderColor: "#4CAF50",
+  },
+  statusWaitlist: {
+    backgroundColor: "#F3E5F5",
+    borderWidth: 2,
+    borderColor: "#9C27B0",
+  },
 
-    favText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  actionTextPrimary: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#4CAF50",
+  },
+  actionTextSecondary: {
+    marginTop: 4,
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "600",
+  },
+  actionTextWaitlist: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#9C27B0",
+  },
 
-    center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  cancelButton: { marginTop: 8 },
+  cancelButtonText: {
+    color: "#E91E63",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
+  },
+
+  utilityButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 10,
+    gap: 8,
+  },
+  utilityText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
