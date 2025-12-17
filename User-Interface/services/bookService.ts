@@ -1,6 +1,6 @@
 import { apiCatalog } from "./apiCatalog";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "https://librarytor6700.duckdns.org";
 
 export const getAllBooks = async () => {
   try {
@@ -25,7 +25,7 @@ export const getBookByIsbn = async (isbn: string) => {
 export async function searchBooks(query: string) {
   try {
     const response = await fetch(
-      `${BASE_URL}/catalog?page=0&size=10&query=${encodeURIComponent(query)}`
+      `${BASE_URL}/catalog?page=0&size=1000&query=${encodeURIComponent(query)}`
     );
     if (!response.ok) throw new Error("Erro ao buscar livros");
 

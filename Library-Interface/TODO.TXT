@@ -1,0 +1,1 @@
+merge router and api services, patch authservice and rearange router.tsx logic

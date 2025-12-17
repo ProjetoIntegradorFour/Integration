@@ -1,0 +1,42 @@
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+dist/               # Vite's build output directory
+.temp/
+.cache/
+
+# Environment files
+.env                # Generic .env (never commit secrets!)
+.env.local          # Local overrides
+.env.*.local        # Environment-specific locals
+.env.development    # Dev env vars (if not shared)
+.env.production     # Production env vars (if not shared)
+
+# IDE/Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS/System
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Vite cache
+.vite/
